@@ -800,6 +800,7 @@ public final class ShopScreen {
 
 	static {
 		com.ultracraft.client.Tune.def("shop.pixel", 2.5, "Terminal screen: canvas units per sprite pixel (window bars, button borders; by eye from the layout: 16 px buttons fill 40 units)");
+		com.ultracraft.client.Tune.def("shop.textY", -5.0, "Terminal screen: vertical offset for all text in canvas units (negative moves text down)");
 	}
 
 	/** Unity's Sliced Image: borders (left, bottom, right, top texture pixels) shown at border / (ppu x multiplier) x 100 units. */
@@ -911,7 +912,7 @@ public final class ShopScreen {
 			float lw = tr.getWidth(line) * k;
 			// horizontal: Left 1, Center 2 and Geometry 32 (centred), Right 4 (Justified / Flush as left)
 			float x = (t.h & (2 | 32)) != 0 ? r[0] + (w - lw) / 2 : (t.h & 4) != 0 ? r[2] - lw : r[0];
-			float y = top - li * lineH;
+			float y = top + (float) com.ultracraft.client.Tune.get("shop.textY") - li * lineH;
 			Vector2f p = fr.transformPosition(x, y, new Vector2f());
 			ms.push();
 			Matrix4f m = ms.peek().getPositionMatrix();
