@@ -108,6 +108,12 @@ ULTRAKILL install, with the scripts in `tools/extract/`. The sound library FMOD 
 setup downloads it from PyPI while it runs. The jar it builds contains ULTRAKILL's content, so it is for you only:
 please don't share it; share the setup instead.
 
+## Credits
+
+- **June** ([bungbungbunghagur](https://github.com/bungbungbunghagur)) — NeoForge 1.21.1 port and release.
+- **StanleyMOV** ([original project](https://github.com/stanleymov/UltraCraft-Reimagined)) — original UltraCraft Reimagined.
+- **GitHub Copilot** and **OpenAI Codex** — development assistance on the port, guided by June.
+
 ## Made and tested by people and Claude, not by generative AI slop
 
 - **No generative AI was used for any visual or audio asset.** Every model, animation, texture, sound and HUD element
