@@ -25,12 +25,6 @@ public final class TerminalBlockEntity extends BlockEntity {
 		if (world.isClient) CLIENT.add(this);
 	}
 
-	/** Frustum culling: the whole model (about 1.8 x 3 blocks), not this block, or it vanishes looking up past it. */
-	@Override
-	public net.minecraft.util.math.Box getRenderBoundingBox() {
-		return new net.minecraft.util.math.Box(pos).expand(1, 0, 1).stretch(0, 2, 0);
-	}
-
 	@Override
 	public void markRemoved() {
 		super.markRemoved();

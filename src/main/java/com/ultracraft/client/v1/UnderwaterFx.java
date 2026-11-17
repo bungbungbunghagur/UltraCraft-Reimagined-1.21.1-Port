@@ -4,7 +4,7 @@ import com.ultracraft.client.Tune;
 import com.ultracraft.client.UKSound;
 import com.ultracraft.client.uk.RigInstance;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.CameraSubmersionType;
+import net.minecraft.block.enums.CameraSubmersionType;
 
 /**
  * UnderwaterController, with the camera in water: EnterWater plays its overlay's AudioSource (volume 0.25) looping

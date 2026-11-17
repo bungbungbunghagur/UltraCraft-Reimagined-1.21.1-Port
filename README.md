@@ -93,7 +93,7 @@ You need **ULTRAKILL** (Steam; the base game, no DLC needed), **Minecraft Java E
    then lets you pick: a new **UltraCraft Reimagined** profile (CurseForge, Prism Launcher or MultiMC), one of your
    own NeoForge 1.21.1 profiles, or any mods folder.
 4. It builds the mod from your ULTRAKILL in a few minutes (command windows may flash; that's normal) and puts the jar
-   in that profile. Play it from your launcher: a new profile downloads Minecraft and Forge the first time.
+   in that profile. Play it from your launcher: a new profile downloads Minecraft and NeoForge the first time.
 
 The setup is also the updater: run a newer one over your install. When an update brings no new ULTRAKILL files, it
 only replaces the code and doesn't need ULTRAKILL.
@@ -120,13 +120,13 @@ please don't share it; share the setup instead.
 
 | Folder | What |
 |---|---|
-| `src/` | the mod (NeoForge 1.21.1, Java): V1's movement, weapons, arms, rigs and animation player, HUD, style meter, shop, damage |
+| `src/` | the mod (NeoForge 1.21.1, Java 21): V1's movement, weapons, arms, rigs and animation player, HUD, style meter, shop, damage |
 | `tools/extract/` | the extraction pipeline the setup runs on your ULTRAKILL install: Addressables catalog, rigs and animation clips, meshes, textures, sounds, fonts, the shop canvas |
 | `tools/re/` | scripts that read ULTRAKILL's game data and code layout to look up the game's own values |
 | `installer/` | the setup: wizard and engine (Python), launcher (Rust), package builder |
 | `docs/` | notes on ULTRAKILL's mechanics and its files, and the plan |
 
-Building from source: `./gradlew build codeJar` (JDK 17). The mod needs the converted ULTRAKILL content in
+Building from source: `./gradlew build codeJar` (JDK 21). The mod needs the converted ULTRAKILL content in
 `src/main/resources/assets/ultracraft/` (git-ignored), which `tools/extract/build_assets.py` builds from an ULTRAKILL
 install. `python installer/build_package.py --zip` then makes the setup download from the code-only jar.
 

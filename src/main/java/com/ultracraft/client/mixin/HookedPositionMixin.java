@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntity.class)
 abstract class HookedPositionMixin {
 	@Inject(method = "updateTrackedPositionAndAngles", at = @At("HEAD"), cancellable = true)
-	private void ultracraft$ownPull(double x, double y, double z, float yaw, float pitch, int steps, boolean interpolate, CallbackInfo ci) {
+	private void ultracraft$ownPull(double x, double y, double z, float yaw, float pitch, int steps, CallbackInfo ci) {
 		if (((LivingEntity) (Object) this).getId() == WhiplashClient.INSTANCE.ownPulled()) ci.cancel();
 	}
 }

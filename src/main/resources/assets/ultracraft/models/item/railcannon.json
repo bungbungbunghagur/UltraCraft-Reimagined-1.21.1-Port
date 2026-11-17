@@ -2,5 +2,19 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "ultracraft:uk/railcannon_sq"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "ultracraft:variant": 1
+      },
+      "model": "ultracraft:item/railcannon_v1"
+    },
+    {
+      "predicate": {
+        "ultracraft:variant": 2
+      },
+      "model": "ultracraft:item/railcannon_v2"
+    }
+  ]
 }

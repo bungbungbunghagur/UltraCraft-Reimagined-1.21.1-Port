@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.MapColor;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
@@ -34,12 +35,18 @@ import net.minecraft.world.WorldView;
  * mineable/pickaxe); breaking particles are the game's Basic Color - Yellow (atlases/blocks.json).
  */
 public final class TerminalBlock extends BlockWithEntity {
+	private static final MapCodec<TerminalBlock> CODEC = MapCodec.unit(TerminalBlock::new);
 	public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
 	public static final EnumProperty<DoubleBlockHalf> HALF = Properties.DOUBLE_BLOCK_HALF;
 
 	public TerminalBlock() {
 		super(Settings.create().mapColor(MapColor.IRON_GRAY).strength(3f, 6f).requiresTool().sounds(BlockSoundGroup.METAL).nonOpaque().luminance(s -> 4));
 		setDefaultState(getStateManager().getDefaultState().with(FACING, Direction.NORTH).with(HALF, DoubleBlockHalf.LOWER));
+	}
+
+	@Override
+	protected MapCodec<? extends BlockWithEntity> getCodec() {
+		return CODEC;
 	}
 
 	@Override
@@ -78,14 +85,14 @@ public final class TerminalBlock extends BlockWithEntity {
 	}
 
 	@Override
-	public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+	public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
 		// breaking the upper half in creative: the lower one goes without a drop (as a door does)
 		if (!world.isClient && player.isCreative() && state.get(HALF) == DoubleBlockHalf.UPPER) {
 			BlockPos below = pos.down();
 			BlockState b = world.getBlockState(below);
 			if (b.isOf(this) && b.get(HALF) == DoubleBlockHalf.LOWER) world.setBlockState(below, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL | Block.SKIP_DROPS);
 		}
-		super.onBreak(world, pos, state, player);
+		return super.onBreak(world, pos, state, player);
 	}
 
 	@Override

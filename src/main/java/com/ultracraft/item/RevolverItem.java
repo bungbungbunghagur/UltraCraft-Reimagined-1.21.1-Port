@@ -22,16 +22,16 @@ public class RevolverItem extends Item {
 
 	public static ItemStack of(int variation) {
 		ItemStack s = new ItemStack(UKItems.REVOLVER.get());
-		s.getOrCreateNbt().putInt("var", variation);
+		UKWeaponItem.setVariation(s, variation);
 		return s;
 	}
 
 	public static int variation(ItemStack stack) {
-		return stack.hasNbt() ? Math.floorMod(stack.getNbt().getInt("var"), 3) : 0;
+		return UKWeaponItem.variation(stack);
 	}
 
 	public static boolean alternate(ItemStack stack) {
-		return stack.hasNbt() && stack.getNbt().getBoolean("alt");
+		return UKWeaponItem.alternate(stack);
 	}
 
 	public static void setVariation(ItemStack stack, int v) {

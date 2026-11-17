@@ -98,7 +98,23 @@
     },
     {
       "type": "single",
+      "resource": "ultracraft:uk/revolverspecial_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/revolversharp_sq"
+    },
+    {
+      "type": "single",
       "resource": "ultracraft:uk/revolveraltsingle_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/revolveraltspecial_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/revolveraltsharp_sq"
     },
     {
       "type": "single",
@@ -110,11 +126,31 @@
     },
     {
       "type": "single",
+      "resource": "ultracraft:uk/hammersaw_sq"
+    },
+    {
+      "type": "single",
       "resource": "ultracraft:uk/nailgun2_sq"
     },
     {
       "type": "single",
       "resource": "ultracraft:uk/sawbladelauncher_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/sawbladelauncheroverheat_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/sawbladelauncherzapper_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/nailgunoverheat_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/nailgunzapper_sq"
     },
     {
       "type": "single",
@@ -139,6 +175,26 @@
     {
       "type": "single",
       "resource": "ultracraft:uk/basic_color_-_yellow"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/shotgunsaw_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/railcannonscrew_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/railcannonmalicious_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/rocketlaunchercannon_sq"
+    },
+    {
+      "type": "single",
+      "resource": "ultracraft:uk/rocketlaunchergasoline_sq"
     }
   ]
 }

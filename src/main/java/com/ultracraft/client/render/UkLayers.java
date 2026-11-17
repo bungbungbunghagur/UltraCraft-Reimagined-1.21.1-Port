@@ -239,9 +239,9 @@ public final class UkLayers extends RenderLayer {
 	 * weather without one - vanilla draws its clouds after the particles, over anything that left no depth behind; drawn
 	 * after them, the clouds' depth hides what is behind a cloud and nothing else.
 	 */
-	public static net.minecraftforge.client.event.RenderLevelStageEvent.Stage depthlessStage() {
-		return shadersOn() ? net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES
-			: net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_WEATHER;
+	public static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage depthlessStage() {
+		return shadersOn() ? net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES
+			: net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_WEATHER;
 	}
 
 	/**
@@ -249,9 +249,9 @@ public final class UkLayers extends RenderLayer {
 	 * camera's turn into RenderSystem's model-view matrix (for the clouds and the weather) and the event's stack holds
 	 * it too: drawn with the stack as it is, the turn was applied twice. The model-view is taken back out here.
 	 */
-	public static net.minecraft.client.util.math.MatrixStack worldStack(net.minecraftforge.client.event.RenderLevelStageEvent e) {
+	public static net.minecraft.client.util.math.MatrixStack worldStack(net.neoforged.neoforge.client.event.RenderLevelStageEvent e) {
 		net.minecraft.client.util.math.MatrixStack ms = e.getPoseStack();
-		org.joml.Matrix4f mv = com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix();
+		org.joml.Matrix4f mv = new org.joml.Matrix4f(e.getModelViewMatrix());
 		if (mv.equals(new org.joml.Matrix4f(), 1e-5f)) return ms;
 		net.minecraft.client.util.math.MatrixStack out = new net.minecraft.client.util.math.MatrixStack();
 		out.peek().getPositionMatrix().set(new org.joml.Matrix4f(mv).invert().mul(ms.peek().getPositionMatrix()));

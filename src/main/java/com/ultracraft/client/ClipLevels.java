@@ -34,7 +34,7 @@ final class ClipLevels {
 		try (InputStream in = MinecraftClient.getInstance().getResourceManager().open(location); OggAudioStream ogg = new OggAudioStream(in)) {
 			int channels = Math.max(1, ogg.getFormat().getChannels());
 			int window = Math.max(1, (int) (ogg.getFormat().getSampleRate() * WINDOW) * channels);
-			ByteBuffer bytes = ogg.getBuffer();
+			ByteBuffer bytes = ogg.readAll();
 			ShortBuffer samples = bytes.order(ByteOrder.nativeOrder()).asShortBuffer();
 			float[] env = new float[(samples.remaining() + window - 1) / window];
 			for (int i = 0, n = samples.remaining(); i < n; i++) {

@@ -30,7 +30,7 @@ public final class CoinAim {
 	public static void snapshot(MinecraftClient mc) {
 		ClientPlayerEntity p = mc.player;
 		if (p == null || mc.world == null) return;
-		float td = mc.getTickDelta();
+		float td = mc.getRenderTickCounter().getTickDelta(false);
 		snapNanos = System.nanoTime();
 		snapEye = mc.options.getPerspective().isFirstPerson() ? mc.gameRenderer.getCamera().getPos() : p.getCameraPosVec(td);
 		snapLook = p.getRotationVec(td);

@@ -84,9 +84,17 @@ EMISSIVE_ALPHA = ["T_PistolNew_Emissive", "v1_wingcolour_emissive_colorless", "T
 CUSTOM_TINT = [("T_Chainsaw", "T_Chainsaw_ID", (1.0, 0.2352941, 0.2352941), "t_chainsaw_red")]
 # sprites the game tints at draw time: stored white so the tint colour is the colour (the smoke sprite is grey)
 WHITE_ALPHA = ["smokesprite"]
-# hotbar icon size: one texture pixel per screen pixel of a slot at GUI scale 4
-ICON_PX = 64
-ITEM_ICONS = ["SingleRevolver", "RevolverAltSingle", "Shotgun", "Shotgun1", "Hammer", "HammerPump", "Nailgun2", "SawbladeLauncher", "Railcannon", "rocketlauncher"]
+# Item-slot copies of the game's weapon icons. Crop their transparent margins and fit them into a square canvas
+# without changing the artwork's aspect ratio; ItemModel's generated parent then fills the slot cleanly.
+# Keep these in step with WeaponKind.icon(): the hotbar and HUD use the same WeaponDescriptor icon art per variant.
+ITEM_ICONS = ["SingleRevolver", "RevolverSpecial", "RevolverSharp",
+              "RevolverAltSingle", "RevolverAltSpecial", "RevolverAltSharp",
+              "Shotgun", "Shotgun1", "ShotgunSaw", "Hammer", "HammerPump", "HammerSaw",
+              "Nailgun2", "NailgunOverheat", "NailgunZapper",
+              "SawbladeLauncher", "SawbladeLauncherOverheat", "SawbladeLauncherZapper",
+              "Railcannon", "railcannonscrew", "railcannonmalicious",
+              "rocketlauncher", "rocketlaunchercannon", "rocketlaunchergasoline"]
+ITEM_ICON_SIZE = 64
 SOUND_PREFIXES = ["Assets/Sounds/Weapons/", "Assets/Sounds/Movement/", "Assets/Sounds/Gore/", "Assets/Sounds/Impacts/",
                   "Assets/Sounds/UI/", "Assets/Sounds/risingbloop",
                   # UnderwaterController: WaterUnderLoop / WaterSurfacing (and the other water clips)
@@ -241,6 +249,33 @@ def layout():
             shutil.copyfile(p, os.path.join(tex_dst, ident(name) + ".png"))
         else:
             missing.append(name)
+    # Tight, square inventory textures. Preserve the source icon's width/height ratio and enlarge the visible art to
+    # 60 px inside the 64 px canvas, so Minecraft can render it at slot size without stretching a wide icon square.
+    try:
+        from PIL import Image, ImageFilter
+        for name in ITEM_ICONS:
+            p = os.path.join(tex_dst, ident(name) + ".png")
+            if not os.path.isfile(p):
+                continue
+            src = Image.open(p).convert("RGBA")
+            alpha = src.getchannel("A")
+            bounds = alpha.getbbox()
+            if bounds:
+                src = src.crop(bounds)
+            if src.width == 0 or src.height == 0:
+                continue
+            scale = 60 / max(src.width, src.height)
+            size = (max(1, round(src.width * scale)), max(1, round(src.height * scale)))
+            src = src.resize(size, Image.Resampling.LANCZOS)
+            # The original descriptor icons are white alpha art; make that tintable and keep fine lines solid at GUI scale.
+            a = src.getchannel("A").filter(ImageFilter.MaxFilter(3)).point(lambda v: min(255, int(v * 1.5)))
+            out = Image.new("RGBA", (ITEM_ICON_SIZE, ITEM_ICON_SIZE), (255, 255, 255, 0))
+            layer = Image.new("RGBA", size, (255, 255, 255, 0))
+            layer.putalpha(a)
+            out.alpha_composite(layer, ((ITEM_ICON_SIZE - size[0]) // 2, (ITEM_ICON_SIZE - size[1]) // 2))
+            out.save(os.path.join(tex_dst, ident(name) + "_sq.png"))
+    except ImportError:
+        print("Pillow missing: fitted item icons not generated")
     if missing:
         print("missing textures:", missing)
     # additive effect sprites: alpha = brightness, so Minecraft's alpha blending matches the game's additive look
@@ -276,29 +311,6 @@ def layout():
                 im.save(os.path.join(tex_dst, out + ".png"))
     except ImportError:
         pass
-    # item-model copies of the weapon icons: Minecraft stretches item textures square, so pad them square first (<name>_sq.png).
-    # The game's 700-1000 px outline art is then made slot-sized: Minecraft samples a texture pixel per screen pixel, and a
-    # 10 px line in a 1000 px icon fell between the samples in a 64 px slot (spotty outlines). The lines are thickened a
-    # little (a 7 px max filter), the icon shrunk smoothly to ICON_PX and its alpha raised so the thin lines stay solid.
-    try:
-        from PIL import Image, ImageFilter
-        for name in ITEM_ICONS:
-            p = os.path.join(tex_dst, ident(name) + ".png")
-            if not os.path.isfile(p):
-                continue
-            im = Image.open(p).convert("RGBA")
-            side = max(im.size)
-            sq = Image.new("RGBA", (side, side), (0, 0, 0, 0))
-            sq.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
-            alpha = sq.split()[3].filter(ImageFilter.MaxFilter(7))
-            sq.putalpha(alpha)
-            sq = sq.resize((ICON_PX, ICON_PX), Image.LANCZOS)
-            a2 = sq.split()[3].point(lambda v: min(255, int(v * 1.5)))
-            white = Image.new("RGBA", sq.size, (255, 255, 255, 0))
-            white.putalpha(a2)
-            white.save(os.path.join(tex_dst, ident(name) + "_sq.png"))
-    except ImportError:
-        print("Pillow missing: item icons not squared")
     try:
         from PIL import Image
         for albedo, mask, col, out in CUSTOM_TINT:

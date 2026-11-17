@@ -14,9 +14,9 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,17 +73,15 @@ public final class ParryServer {
 	private ParryServer() {}
 
 	public static void init() {
-		MinecraftForge.EVENT_BUS.addListener(ParryServer::onAttack);
+		NeoForge.EVENT_BUS.addListener(ParryServer::onAttack);
 		// parried projectiles before the worlds tick: their coming step is checked before Minecraft moves them, or a
 		// fast arrow met the mob by vanilla's own hit first and only sometimes went off (user)
-		MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
-			if (e.phase == TickEvent.Phase.START) { if (!worldFrozen()) tickParried(); }
-			else tick();
-		});
+		NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre e) -> { if (!worldFrozen()) tickParried(); });
+		NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> tick());
 	}
 
 	/** A mob's direct melee hit on a player becomes a parry window; the damage is applied when it closes. */
-	private static void onAttack(LivingAttackEvent e) {
+	private static void onAttack(LivingIncomingDamageEvent e) {
 		if (applying || !(e.getEntity() instanceof ServerPlayerEntity p)) return;
 		DamageSource src = e.getSource();
 		// the Warden's sonic boom: no projectile in Minecraft, so it is parried like a projectile right at V1, by a punch
@@ -489,9 +487,7 @@ public final class ParryServer {
 		pr.setVelocity(v);
 		pr.velocityModified = true;
 		if (pr instanceof ExplosiveProjectileEntity ex) {
-			ex.powerX = v.x * 0.1;
-			ex.powerY = v.y * 0.1;
-			ex.powerZ = v.z * 0.1;
+			ex.accelerationPower = v.length() * 0.1;
 		}
 	}
 

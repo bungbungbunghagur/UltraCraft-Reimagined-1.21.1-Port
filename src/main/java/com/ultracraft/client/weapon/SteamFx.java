@@ -13,7 +13,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Random;
  * 25° cone, size 0.3–0.5 u, life 0.5 s, white fading out.
  */
 public final class SteamFx {
-	private static final Identifier SPRITE = new Identifier(UltraCraft.MOD_ID, "textures/uk/smokesprite.png");
+	private static final Identifier SPRITE = Identifier.of(UltraCraft.MOD_ID, "textures/uk/smokesprite.png");
 
 	private static final class Puff {
 		Vec3d pos, vel;
@@ -178,6 +178,6 @@ public final class SteamFx {
 	}
 
 	private static void v(VertexConsumer vc, Matrix4f m, double x, double y, double z, float u, float w, float a, float grey) {
-		vc.vertex(m, (float) x, (float) y, (float) z).color(grey, grey, grey, a).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) x, (float) y, (float) z).color(grey, grey, grey, a).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

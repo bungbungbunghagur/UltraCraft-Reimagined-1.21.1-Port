@@ -11,7 +11,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Hand;
-import net.minecraftforge.client.event.RenderHandEvent;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
 import org.joml.Matrix4f;
 
 /**

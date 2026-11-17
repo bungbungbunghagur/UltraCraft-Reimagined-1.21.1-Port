@@ -19,7 +19,7 @@ import java.util.Map;
  * in camera space, scaled to Steve size). Rendered from the RenderHandEvent in Minecraft's view space.
  */
 public final class ViewModel {
-	public static final Identifier TEXTURES = new Identifier(UltraCraft.MOD_ID, "textures/uk/");
+	public static final Identifier TEXTURES = Identifier.of(UltraCraft.MOD_ID, "textures/uk/");
 	private static final Map<String, RigInstance> instances = new HashMap<>();
 	private static long lastNanos;
 	private static final double SCALE = Tune.def("view.scale", 1.0, "multiplier on the Steve scale for first-person rigs");

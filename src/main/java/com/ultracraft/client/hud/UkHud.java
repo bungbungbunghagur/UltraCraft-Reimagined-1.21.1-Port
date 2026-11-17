@@ -128,8 +128,7 @@ public final class UkHud {
 		com.mojang.blaze3d.systems.RenderSystem.setShaderTexture(0, CIRCLE_THICK);
 		com.mojang.blaze3d.systems.RenderSystem.disableCull(); // the fan winds clockwise on the y-down GUI
 		org.joml.Matrix4f m = ctx.getMatrices().peek().getPositionMatrix();
-		var bb = net.minecraft.client.render.Tessellator.getInstance().getBuffer();
-		bb.begin(net.minecraft.client.render.VertexFormat.DrawMode.TRIANGLES, net.minecraft.client.render.VertexFormats.POSITION_TEXTURE_COLOR);
+		var bb = net.minecraft.client.render.Tessellator.getInstance().begin(net.minecraft.client.render.VertexFormat.DrawMode.TRIANGLES, net.minecraft.client.render.VertexFormats.POSITION_TEXTURE_COLOR);
 		if (healthAlpha > 0) for (int i = 0; i < hb.length; i++)
 			radial(bb, m, cx, cy, half, HB_ROT[i], hb[i], HB_CW[i], HB_COLOR[i][0], HB_COLOR[i][1], HB_COLOR[i][2], healthAlpha);
 		if (stamAlpha > 0) for (int i = 0; i < 3; i++) {
@@ -159,9 +158,9 @@ public final class UkHud {
 			double rx = lx * Math.cos(rot) - ly * Math.sin(rot), ry = lx * Math.sin(rot) + ly * Math.cos(rot);
 			float[] pt = {(float) (cx + rx), (float) (cy - ry), u, vv};
 			if (prev != null) {
-				bb.vertex(m, cx, cy, 0).texture(0.5f, 0.5f).color(r, g, b, a).next();
-				bb.vertex(m, pt[0], pt[1], 0).texture(pt[2], pt[3]).color(r, g, b, a).next();
-				bb.vertex(m, prev[0], prev[1], 0).texture(prev[2], prev[3]).color(r, g, b, a).next();
+				bb.vertex(m, cx, cy, 0).texture(0.5f, 0.5f).color(r, g, b, a);
+				bb.vertex(m, pt[0], pt[1], 0).texture(pt[2], pt[3]).color(r, g, b, a);
+				bb.vertex(m, prev[0], prev[1], 0).texture(prev[2], prev[3]).color(r, g, b, a);
 			}
 			prev = pt;
 		}
@@ -175,7 +174,7 @@ public final class UkHud {
 			V1Hud.render(ctx, tickDelta, w, h);
 			return;
 		}
-		float dt = Math.min(0.1f, client.getLastFrameDuration() / 20f); // frame time in seconds
+		float dt = Math.min(0.1f, client.getRenderTickCounter().getLastFrameDuration() / 20f); // frame time in seconds
 		lastDt = dt;
 		V1 v = V1.INSTANCE;
 		StyleState st = StyleState.INSTANCE;
@@ -192,7 +191,10 @@ public final class UkHud {
 		d.push();
 		d.translate(cx - 79, cy);
 		d.scale(4);
+		float previousTextOffset = d.textYOffset;
+		d.textYOffset = 0;
 		statsPanel(p, v, st, dt);
+		d.textYOffset = previousTextOffset;
 		d.pop();
 		// GunPanel: pos (-79, 187) size 200x100, scale 4
 		if (Tune.on("hud.weaponIcon")) {
@@ -209,7 +211,10 @@ public final class UkHud {
 			d.scale(4);
 			d.sliced(FILL_LARGE, 83, 37, PPU, 0, 0, 200, 25, 0, 0, 0, boxA());
 			double speed = Math.sqrt(v.vel.x * v.vel.x + v.vel.y * v.vel.y + v.vel.z * v.vel.z);
+			previousTextOffset = d.textYOffset;
+			d.textYOffset = 0;
 			d.text(String.format("SPEED: %.2f u/s", speed), 100, 20.5f, 16, HudDraw.Align.CENTER, 0xFFFFFFFF);
+			d.textYOffset = previousTextOffset;
 			d.pop();
 		}
 		d.pop();

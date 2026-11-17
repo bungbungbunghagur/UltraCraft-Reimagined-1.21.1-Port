@@ -17,7 +17,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.HashMap;
@@ -32,9 +32,9 @@ import java.util.Set;
  * (0.2, pitch 0.65); every frame it shrinks toward nothing (Lerp x 5 dt). The server's fuse is the clock (FUSE_AT).
  */
 public final class MagnetFx {
-	private static final Identifier SPRITE = new Identifier(UltraCraft.MOD_ID, "textures/uk/muzzleflashnailgun.png");
+	private static final Identifier SPRITE = Identifier.of(UltraCraft.MOD_ID, "textures/uk/muzzleflashnailgun.png");
 	/** The same star in white, for a tinted beeper (magnet.beepWhite). */
-	private static final Identifier SPRITE_WHITE = new Identifier(UltraCraft.MOD_ID, "textures/uk/muzzleflashwhite.png");
+	private static final Identifier SPRITE_WHITE = Identifier.of(UltraCraft.MOD_ID, "textures/uk/muzzleflashwhite.png");
 
 	private static final class Beeper {
 		int beeps;
@@ -62,7 +62,7 @@ public final class MagnetFx {
 		float dt = lastNanos == 0 ? 0 : Math.min(0.1f, (now - lastNanos) / 1e9f);
 		lastNanos = now;
 		if (ViewModel.paused() || com.ultracraft.client.v1.V1.INSTANCE.frozen()) dt = 0;
-		float td = e.getPartialTick();
+		float td = e.getPartialTick().getTickDelta(false);
 		Camera cam = e.getCamera();
 		Vec3d camPos = cam.getPos();
 		MatrixStack ms = com.ultracraft.client.render.UkLayers.worldStack(e);
@@ -124,6 +124,6 @@ public final class MagnetFx {
 	}
 
 	private static void v(VertexConsumer vc, Matrix4f m, Vec3d p, float u, float w, float r, float g, float b) {
-		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, 1f).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, 1f).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

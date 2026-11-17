@@ -13,6 +13,7 @@ Only our own work and freely licensed tools go in - never any ULTRAKILL files, a
     python installer/build_package.py [--zip]        (build the mod first: ./gradlew build codeJar)
 """
 import json
+import os
 import shutil
 import sys
 import zipfile
@@ -20,7 +21,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 NAME = "UltraCraft Reimagined"
-OUT = REPO / "release" / f"{NAME} Setup"
+OUT = REPO / "release" / os.environ.get("UK_PACKAGE_DIR", f"{NAME} Setup")
 PY = Path(sys.base_prefix)
 SITE = PY / "Lib" / "site-packages"
 # (distribution, its top-level folders / files in site-packages)
@@ -31,7 +32,12 @@ PACKAGES = [("unitypy", ["UnityPy"]), ("typetreegeneratorapi", ["TypeTreeGenerat
 STDLIB_SKIP = {"site-packages", "test", "idlelib", "ensurepip", "turtledemo", "lib2to3", "pydoc_data", "__pycache__"}
 # every exporter (they import each other), and nothing else from tools/
 TOOLS = sorted(f"extract/{f.name}" for f in (REPO / "tools" / "extract").glob("*.py"))
-FFMPEG = next((Path.home() / "AppData/Local/Microsoft/WinGet/Packages").glob("Gyan.FFmpeg*/ffmpeg-*_build"))
+FFMPEG_ROOT = Path.home() / "AppData/Local/Microsoft/WinGet/Packages"
+FFMPEG = next(FFMPEG_ROOT.glob("Gyan.FFmpeg.Essentials*/ffmpeg-*-essentials_build"), None)
+if FFMPEG is None:
+    FFMPEG = next(FFMPEG_ROOT.glob("Gyan.FFmpeg*/ffmpeg-*-full_build"), None)
+if FFMPEG is None:
+    raise SystemExit(f"a standalone FFmpeg build (Essentials or full) was not found in {FFMPEG_ROOT}")
 
 
 def copytree(src, dst, skip=()):
@@ -82,7 +88,7 @@ def setup_files():
     s.mkdir(parents=True, exist_ok=True)
     for f in ("setup.pyw", "engine.py", "version.json"):
         shutil.copy2(REPO / "installer" / f, s / f)
-    copytree(REPO / "installer" / "data", s / "data")   # CurseForge's Forge loader entry for new profiles
+    copytree(REPO / "installer" / "data", s / "data")   # CurseForge's NeoForge loader entry for new profiles
     for t in TOOLS:
         (s / "tools" / t).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / "tools" / t, s / "tools" / t)
@@ -96,7 +102,9 @@ def binaries():
 
 def tracked_resources():
     import subprocess
-    r = subprocess.run(["git", "-C", str(REPO), "ls-files", "src/main/resources"], capture_output=True, text=True, check=True)
+    # Include newly added source resources before their first commit. Git's standard excludes keep the locally
+    # extracted ULTRAKILL assets out of this allowlist, while static project resources still pass jar validation.
+    r = subprocess.run(["git", "-C", str(REPO), "ls-files", "--cached", "--others", "--exclude-standard", "src/main/resources"], capture_output=True, text=True, check=True)
     return {f[len("src/main/resources/"):] for f in r.stdout.splitlines()}
 
 
@@ -166,7 +174,7 @@ def main():
         f"{NAME} - setup\n\n"
         f"Double-click \"Setup {NAME}.exe\". You need ULTRAKILL (Steam; the base game, no DLC needed) installed and\n"
         f"Minecraft Java Edition. The setup builds the {NAME} mod from YOUR copy of ULTRAKILL - no ULTRAKILL files\n"
-        "are included here - and puts it into a Minecraft Forge 1.20.1 profile (yours, or a new one it makes in\n"
+        "are included here - and puts it into a Minecraft NeoForge 1.21.1 profile (yours, or a new one it makes in\n"
         "CurseForge, Prism Launcher or MultiMC). It needs the internet once, for FMOD (the sound library ULTRAKILL uses).\n\n"
         "The jar it builds contains ULTRAKILL's models, art, animations and sounds from your own game: it is for you\n"
         "only. Please don't share it; share this setup instead.\n\n"

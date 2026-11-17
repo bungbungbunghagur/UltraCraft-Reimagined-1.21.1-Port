@@ -13,8 +13,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /**
  * The Terminal shop (ShopZone / VariationInfo), server side. A player owns variations (a bit mask per weapon, kept in
@@ -98,7 +98,7 @@ public final class Shop {
 
 	public static void init() {
 		Net.onServer(ShopPayload.class, Shop::onShop);
-		MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> e.getDispatcher().register(CommandManager.literal("ukshop")
+		NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> e.getDispatcher().register(CommandManager.literal("ukshop")
 			.requires(src -> src.hasPermissionLevel(2))
 			.then(CommandManager.literal("reset").executes(c -> { reset(c.getSource().getPlayerOrThrow(), 1); return 1; }))
 			.then(CommandManager.literal("all").executes(c -> { reset(c.getSource().getPlayerOrThrow(), 7); return 1; }))

@@ -23,7 +23,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayDeque;
@@ -43,7 +43,7 @@ import java.util.Optional;
  */
 public final class NailGhosts {
 	private static final double DT = 0.05;
-	private static final Identifier WHITE = new Identifier("minecraft", "textures/misc/white.png");
+	private static final Identifier WHITE = Identifier.of("minecraft", "textures/misc/white.png");
 
 	private static final class Ghost {
 		final ProjectileKind kind;
@@ -171,7 +171,7 @@ public final class NailGhosts {
 		if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || ghosts.isEmpty()) return;
 		MinecraftClient c = MinecraftClient.getInstance();
 		Vec3d cam = e.getCamera().getPos();
-		float td = e.getPartialTick();
+		float td = e.getPartialTick().getTickDelta(false);
 		MatrixStack ms = e.getPoseStack();
 		VertexConsumerProvider.Immediate buffers = c.getBufferBuilders().getEntityVertexConsumers();
 		double now = com.ultracraft.client.uk.ViewModel.gameSeconds();
@@ -221,7 +221,7 @@ public final class NailGhosts {
 		else if (g.kind == ProjectileKind.NAIL_FODDER) { life = 0.25; w = 0.2f; r = 0.251f; gg = 0.906f; b = 1f; a0 = 0.49f; }
 		else { life = 0.25; w = 0.2f; r = 1f; gg = 1f; b = 1f; a0 = 0.49f; }
 		ArrayDeque<double[]> q = g.trail;
-		Vec3d raw = g.prev.lerp(g.pos, MinecraftClient.getInstance().getTickDelta());
+		Vec3d raw = g.prev.lerp(g.pos, MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false));
 		if (q.isEmpty() || q.peekLast()[3] < now - 1.0 / 120) q.addLast(new double[] {raw.x, raw.y, raw.z, now, g.camAtSpawn.x, g.camAtSpawn.y, g.camAtSpawn.z});
 		while (!q.isEmpty() && q.peekFirst()[3] < now - life) q.pollFirst();
 		if (q.size() < 2) return;
@@ -271,7 +271,7 @@ public final class NailGhosts {
 	}
 
 	private static void v(VertexConsumer vc, Matrix4f m, Vec3d p, float r, float g, float b, float a) {
-		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, a).texture(0.5f, 0.5f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, a).texture(0.5f, 0.5f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 
 	private static final double PREDICT = Tune.def("proj.nailPredict", 1, "1 = your own nails are drawn from your gun the frame you fire (the server's copy in flight is hidden)");

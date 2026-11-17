@@ -9,11 +9,9 @@ base { archivesName = project.archives_base_name }
 loom {
     // the mixin configs name this refmap; without it the name follows the jar's (UltraCraft-Reimagined), which they
     // don't find ("No refMap loaded": every mixin by an obfuscated name fails outside the dev run)
-    mixin { defaultRefmapName = "UltraCraft-refmap.json" }
-    forge {
-        mixinConfig "ultracraft.mixins.json"
-        mixinConfig "ultracraft.client.mixins.json"
-        mixinConfig "ultracraft.oculus.mixins.json"
+    mixin {
+        useLegacyMixinAp = true
+        defaultRefmapName = "UltraCraft-refmap.json"
     }
     runs {
         client {
@@ -23,34 +21,29 @@ loom {
 }
 
 repositories {
-    maven { url "https://maven.minecraftforge.net/" }
+    maven { url "https://maven.neoforged.net/releases/" }
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    forge "net.minecraftforge:forge:${project.forge_version}"
-    // Dev-only: run with the player's Embeddium + Oculus (not shipped, not a dependency).
-    // Off by default: Embeddium 0.3.31's ForgeGuiMixin fails to apply in this dev runtime (2026-10-16);
-    // turn on with -PdevShaders=true when working on the retro-look / shader-pack compatibility.
-    if (project.hasProperty("devShaders")) {
-        modLocalRuntime files("devmods/embeddium-0.3.31+mc1.20.1.jar", "devmods/oculus-mc1.20.1-1.8.0.jar")
-        localRuntime files("devmods/jcpp-1.4.14.jar") // bundled inside Oculus; the dev run doesn't unpack it
-        forgeRuntimeLibrary files("devmods/jcpp-1.4.14.jar")
+    mappings loom.layered {
+        it.mappings("net.fabricmc:yarn:${project.yarn_mappings}:v2")
+        it.mappings("dev.architectury:yarn-mappings-patch-neoforge:${project.yarn_mappings_patch_neoforge}")
     }
+    neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 }
 
 processResources {
     inputs.property "version", project.version
-    filesMatching("META-INF/mods.toml") { expand "version": project.version }
+    filesMatching("META-INF/neoforge.mods.toml") { expand "version": project.version }
 }
 
-tasks.withType(JavaCompile).configureEach { it.options.release = 17 }
+tasks.withType(JavaCompile).configureEach { it.options.release = 21 }
 
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 // The setup's payload: the mod jar without anything built from ULTRAKILL (the git-ignored resource folders), which the

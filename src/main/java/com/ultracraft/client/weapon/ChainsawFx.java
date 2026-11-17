@@ -17,7 +17,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -30,7 +30,7 @@ import java.util.List;
  */
 public final class ChainsawFx {
 	/** Chainsaw's LineRenderer: material Gradient ('gradient', a bright band across the width), colour 0.66 grey. */
-	private static final Identifier WIRE = new Identifier(UltraCraft.MOD_ID, "textures/uk/gradient.png");
+	private static final Identifier WIRE = Identifier.of(UltraCraft.MOD_ID, "textures/uk/gradient.png");
 	/** View-space (Unity camera units) position of the Sawed-On's ChainSawAttachPoint this frame, or null; [1] the off-hand gun's. */
 	public static Vector3f attachView, attachViewOff;
 	private static boolean looping;
@@ -82,7 +82,8 @@ public final class ChainsawFx {
 		Vec3d camPos = cam.getPos();
 		// each saw's chain starts at the attach point of the gun that threw it while that Sawed-On is in hand (first
 		// person), else at the eye (Shotgun.OnDisable: lineStartTransform = the player)
-		Vec3d eye = c.player.getEyePos().add(c.player.getRotationVec(e.getPartialTick()).multiply(0.3));
+		float tickDelta = e.getPartialTick().getTickDelta(false);
+		Vec3d eye = c.player.getEyePos().add(c.player.getRotationVec(tickDelta).multiply(0.3));
 		boolean fp = c.options.getPerspective().isFirstPerson();
 		Vec3d mainStart = fp && attachView != null && sawedOn(c.player.getMainHandStack()) ? HandRenderer.viewToWorld(attachView) : eye;
 		Vec3d offStart = fp && attachViewOff != null && OffhandGun.active(c.player) && sawedOn(c.player.getOffHandStack()) ? HandRenderer.viewToWorld(attachViewOff) : eye;
@@ -94,7 +95,7 @@ public final class ChainsawFx {
 		VertexConsumer vc = buffers.getBuffer(RenderLayer.getEntityCutoutNoCull(WIRE));
 		for (UKProjectileEntity saw : saws) {
 			Vec3d start = saw.offHand() ? offStart : mainStart;
-			Vec3d end = saw.getLerpedPos(e.getPartialTick());
+			Vec3d end = saw.getLerpedPos(tickDelta);
 			Vec3d dir = end.subtract(start);
 			double len = dir.length();
 			if (len < 1e-4) continue;
@@ -117,9 +118,9 @@ public final class ChainsawFx {
 	private static void quad(VertexConsumer vc, Matrix4f m, Vec3d a, Vec3d b, Vec3d c, Vec3d d, float u0, float u1) {
 		// 'gradient' runs dark-bright-dark across v: v along the chain's width, u (unused) along it
 		int g = 168; // 0.66
-		vc.vertex(m, (float) a.x, (float) a.y, (float) a.z).color(g, g, g, 255).texture(0.5f, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, (float) b.x, (float) b.y, (float) b.z).color(g, g, g, 255).texture(0.5f, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, (float) c.x, (float) c.y, (float) c.z).color(g, g, g, 255).texture(0.5f, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, (float) d.x, (float) d.y, (float) d.z).color(g, g, g, 255).texture(0.5f, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) a.x, (float) a.y, (float) a.z).color(g, g, g, 255).texture(0.5f, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, (float) b.x, (float) b.y, (float) b.z).color(g, g, g, 255).texture(0.5f, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, (float) c.x, (float) c.y, (float) c.z).color(g, g, g, 255).texture(0.5f, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, (float) d.x, (float) d.y, (float) d.z).color(g, g, g, 255).texture(0.5f, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

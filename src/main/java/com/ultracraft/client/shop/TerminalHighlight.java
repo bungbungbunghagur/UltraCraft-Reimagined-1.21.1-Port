@@ -2,7 +2,7 @@ package com.ultracraft.client.shop;
 
 import com.ultracraft.block.TerminalBlock;
 import net.minecraft.client.MinecraftClient;
-import net.minecraftforge.client.event.RenderHighlightEvent;
+import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 
 /** Aiming at a Terminal: no Minecraft block outline at all (the user's wish); it can still be aimed at and mined. */
 public final class TerminalHighlight {

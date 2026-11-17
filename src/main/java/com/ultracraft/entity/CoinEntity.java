@@ -92,10 +92,10 @@ public class CoinEntity extends Entity {
 	}
 
 	@Override
-	protected void initDataTracker() {
-		dataTracker.startTracking(SHOT, false);
-		dataTracker.startTracking(DOUBLED, false);
-		dataTracker.startTracking(LANDED, false);
+	protected void initDataTracker(DataTracker.Builder builder) {
+		builder.add(SHOT, false);
+		builder.add(DOUBLED, false);
+		builder.add(LANDED, false);
 	}
 
 	/** Coin.Bounce (Whiplash / punch): the coin is thrown 25 u/s straight up again as a fresh coin. */
@@ -165,11 +165,11 @@ public class CoinEntity extends Entity {
 	 * and only take the server's position when it disagrees clearly (a bounce, a hit, a reflected coin).
 	 */
 	@Override
-	public void updateTrackedPositionAndAngles(double x, double y, double z, float yaw, float pitch, int steps, boolean interpolate) {
+	public void updateTrackedPositionAndAngles(double x, double y, double z, float yaw, float pitch, int steps) {
 		// own coin in flight: keep the prediction (collisions are simulated here too; a hit or a landing arrives
 		// as SHOT / LANDED and the server's position is taken again). Others' coins: smooth within 3 blocks.
 		if (!isShot() && !isLanded() && (predicted || getPos().squaredDistanceTo(x, y, z) < 3 * 3)) return;
-		super.updateTrackedPositionAndAngles(x, y, z, yaw, pitch, steps, interpolate);
+		super.updateTrackedPositionAndAngles(x, y, z, yaw, pitch, steps);
 	}
 
 	/** The real coin arrives: continue exactly where the predicted one is, and remove it. */

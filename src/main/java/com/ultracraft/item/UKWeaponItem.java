@@ -3,10 +3,15 @@ package com.ultracraft.item;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+
+import java.util.function.Consumer;
 
 /**
  * An ULTRAKILL weapon as a Minecraft item. NBT `var` = variation 0/1/2. Firing is handled by the client
@@ -23,7 +28,7 @@ public class UKWeaponItem extends Item {
 
 	public static ItemStack of(WeaponKind kind, int variation) {
 		ItemStack s = new ItemStack(UKItems.of(kind));
-		s.getOrCreateNbt().putInt("var", variation);
+		updateCustomData(s, nbt -> nbt.putInt("var", variation));
 		return s;
 	}
 
@@ -36,24 +41,27 @@ public class UKWeaponItem extends Item {
 
 	public static ItemStack ofAlt(WeaponKind kind, int variation) {
 		ItemStack s = of(kind, variation);
-		s.getOrCreateNbt().putBoolean("alt", true);
+		updateCustomData(s, nbt -> nbt.putBoolean("alt", true));
 		return s;
 	}
 
 	/** NBT `alt`: the slot's alternate weapon (Minos revolver, Jackhammer, Sawblade Launcher). */
 	public static boolean alternate(ItemStack stack) {
-		return stack.hasNbt() && stack.getNbt().getBoolean("alt");
+		return customData(stack).getBoolean("alt");
 	}
 
 	public static int variation(ItemStack stack) {
-		return stack.hasNbt() ? Math.floorMod(stack.getNbt().getInt("var"), 3) : 0;
+		return Math.floorMod(customData(stack).getInt("var"), 3);
 	}
 
 	public static void setVariation(ItemStack stack, int v) {
 		v = Math.floorMod(v, 3);
-		boolean alt = alternateOf(stack, v);
-		stack.getOrCreateNbt().putInt("var", v);
-		stack.getNbt().putBoolean("alt", alt);
+		int variation = v;
+		boolean alt = alternateOf(stack, variation);
+		updateCustomData(stack, nbt -> {
+			nbt.putInt("var", variation);
+			nbt.putBoolean("alt", alt);
+		});
 	}
 
 	/**
@@ -61,16 +69,31 @@ public class UKWeaponItem extends Item {
 	 * the held variation's. A stack from before the shop (no `altVars`) has its `alt` on every variation.
 	 */
 	public static boolean alternateOf(ItemStack stack, int variation) {
-		if (!stack.hasNbt()) return false;
-		if (!stack.getNbt().contains("altVars")) return stack.getNbt().getBoolean("alt");
-		return (stack.getNbt().getInt("altVars") >> Math.floorMod(variation, 3) & 1) != 0;
+		NbtCompound nbt = customData(stack);
+		if (!nbt.contains("altVars")) return nbt.getBoolean("alt");
+		return (nbt.getInt("altVars") >> Math.floorMod(variation, 3) & 1) != 0;
 	}
 
 	public static void setAlternateOf(ItemStack stack, int variation, boolean alt) {
 		int mask = 0;
 		for (int v = 0; v < 3; v++) if (v == variation ? alt : alternateOf(stack, v)) mask |= 1 << v;
-		stack.getOrCreateNbt().putInt("altVars", mask);
-		if (Math.floorMod(stack.getNbt().getInt("var"), 3) == Math.floorMod(variation, 3)) stack.getNbt().putBoolean("alt", alt);
+		int currentVariation = UKWeaponItem.variation(stack);
+		int altMask = mask;
+		updateCustomData(stack, nbt -> {
+			nbt.putInt("altVars", altMask);
+			if (currentVariation == Math.floorMod(variation, 3)) nbt.putBoolean("alt", alt);
+		});
+	}
+
+	private static NbtCompound customData(ItemStack stack) {
+		NbtComponent component = stack.get(DataComponentTypes.CUSTOM_DATA);
+		return component == null ? new NbtCompound() : component.copyNbt();
+	}
+
+	private static void updateCustomData(ItemStack stack, Consumer<NbtCompound> update) {
+		NbtCompound nbt = customData(stack);
+		update.accept(nbt);
+		stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 	}
 
 	@Override

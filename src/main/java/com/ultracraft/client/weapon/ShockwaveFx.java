@@ -10,7 +10,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.List;
  * with the game's `shockwavetex` ring (the prefab's "Visual" mesh / "Shockwave" sprite, scale 7, fading 0.25/s).
  */
 public final class ShockwaveFx {
-	private static final Identifier TEX = new Identifier(UltraCraft.MOD_ID, "textures/uk/shockwavetex.png");
+	private static final Identifier TEX = Identifier.of(UltraCraft.MOD_ID, "textures/uk/shockwavetex.png");
 
 	private static final class Wave {
 		Vec3d pos;
@@ -81,6 +81,6 @@ public final class ShockwaveFx {
 	}
 
 	private static void q(VertexConsumer vc, Matrix4f m, double x, double y, double z, float u, float v, float a) {
-		vc.vertex(m, (float) x, (float) y, (float) z).color(1f, 1f, 1f, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) x, (float) y, (float) z).color(1f, 1f, 1f, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

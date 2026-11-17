@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public final class StyleState {
 	public static final StyleState INSTANCE = new StyleState();
-	public static final Identifier FONT = new Identifier(UltraCraft.MOD_ID, "vcr");
+	public static final Identifier FONT = Identifier.of(UltraCraft.MOD_ID, "vcr");
 	public static final Style HUD_STYLE = Style.EMPTY.withFont(FONT);
 	private static final float DT = 0.05f;
 

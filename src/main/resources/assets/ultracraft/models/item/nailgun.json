@@ -6,9 +6,36 @@
   "overrides": [
     {
       "predicate": {
-        "ultracraft:alt": 1
+        "ultracraft:variant": 1
+      },
+      "model": "ultracraft:item/nailgun_v1"
+    },
+    {
+      "predicate": {
+        "ultracraft:variant": 2
+      },
+      "model": "ultracraft:item/nailgun_v2"
+    },
+    {
+      "predicate": {
+        "ultracraft:alt": 1,
+        "ultracraft:variant": 0
       },
       "model": "ultracraft:item/nailgun_alt"
+    },
+    {
+      "predicate": {
+        "ultracraft:alt": 1,
+        "ultracraft:variant": 1
+      },
+      "model": "ultracraft:item/nailgun_alt_v1"
+    },
+    {
+      "predicate": {
+        "ultracraft:alt": 1,
+        "ultracraft:variant": 2
+      },
+      "model": "ultracraft:item/nailgun_alt_v2"
     }
   ]
 }

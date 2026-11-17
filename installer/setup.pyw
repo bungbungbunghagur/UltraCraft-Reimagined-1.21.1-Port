@@ -59,8 +59,18 @@ class Wizard(tk.Tk):
         self.game = engine.find_ultrakill()
         self.profiles = engine.find_profiles()
         self.launchers = engine.launchers()
-        self.choice = tk.StringVar(value=(NEW + self.launchers[0]) if self.launchers else
-                                   (str(self.profiles[0]["mods"]) if self.profiles else OTHER))
+        selected_profile = engine.selected_prism_profile(self.profiles)
+        if selected_profile:
+            default_choice = str(selected_profile["mods"])
+        elif len(self.profiles) == 1:
+            default_choice = str(self.profiles[0]["mods"])
+        elif self.launchers:
+            default_choice = NEW + self.launchers[0]
+        elif self.profiles:
+            default_choice = str(self.profiles[0]["mods"])
+        else:
+            default_choice = OTHER
+        self.choice = tk.StringVar(value=default_choice)
         self.other = tk.StringVar(value="")
         self.installer = None
         self.jar = None
@@ -122,11 +132,11 @@ class Wizard(tk.Tk):
     def page_welcome(self):
         ttk.Label(self.body, text=f"UltraCraft Reimagined {self.version}", style="Title.TLabel").pack(anchor="w")
         self.text(self.body, "Play as V1 in Minecraft: ULTRAKILL's movement, arms, weapons, style meter and shop "
-                             "(Forge 1.20.1).", pady=(2, 14))
+                             "(NeoForge 1.21.1).", pady=(2, 14))
         self.text(self.body, (
             "This setup builds the mod on your PC from YOUR OWN copy of ULTRAKILL - no ULTRAKILL files come with the "
             "download. You need ULTRAKILL (Steam; the base game is enough, no DLC) and Minecraft Java Edition. The setup "
-            "puts the finished UltraCraft Reimagined mod into a Forge 1.20.1 profile of your modding launcher (CurseForge, Prism "
+            "puts the finished UltraCraft Reimagined mod into a NeoForge 1.21.1 profile of your modding launcher (CurseForge, Prism "
             "Launcher or MultiMC): a new UltraCraft Reimagined profile, or one you already have. It takes a few minutes, needs an "
             "internet connection for one small download (FMOD, the sound library ULTRAKILL uses) and about 2 GB of free "
             "space while it works."), pady=(0, 12))
@@ -200,7 +210,7 @@ class Wizard(tk.Tk):
             verb = "Update" if engine.uc_profile(launcher) else "Create"
             ttk.Radiobutton(box, text=f"{verb} UltraCraft Reimagined ({launcher})", value=NEW + launcher, variable=self.choice,
                             command=self.update_note).pack(anchor="w", pady=(2, 2))
-        # 2. the player's own Forge 1.20.1 profiles
+        # 2. the player's own NeoForge 1.21.1 profiles
         for p in self.profiles:
             if p["name"] == engine.PROFILE_NAME:
                 continue
@@ -414,7 +424,7 @@ class Wizard(tk.Tk):
         updated = getattr(self, "was_update", False)
         if launcher and not updated:
             how = (f"Open {launcher} (restart it if it was already open) and play the UltraCraft Reimagined profile. The first "
-                   "start downloads Minecraft and Forge, which takes a minute.")
+                   "start downloads Minecraft and NeoForge, which takes a minute.")
         elif launcher:
             how = f"Open {launcher} (restart it if it was already open) and play the UltraCraft Reimagined profile."
         else:

@@ -36,7 +36,7 @@ public final class Plants {
 	private Plants() {}
 
 	private static final Set<Block> PLANTS = Set.of(
-		Blocks.GRASS, Blocks.TALL_GRASS, Blocks.FERN, Blocks.LARGE_FERN, Blocks.DEAD_BUSH,
+		Blocks.SHORT_GRASS, Blocks.TALL_GRASS, Blocks.FERN, Blocks.LARGE_FERN, Blocks.DEAD_BUSH,
 		Blocks.VINE, Blocks.WEEPING_VINES, Blocks.WEEPING_VINES_PLANT, Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT,
 		Blocks.GLOW_LICHEN, Blocks.POINTED_DRIPSTONE, Blocks.AZALEA, Blocks.FLOWERING_AZALEA, Blocks.SWEET_BERRY_BUSH,
 		Blocks.SUGAR_CANE, Blocks.HANGING_ROOTS, Blocks.SPORE_BLOSSOM, Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM,
@@ -109,7 +109,6 @@ public final class Plants {
 			if (world.getBlockState(below).isOf(s.getBlock())) { pos = below; s = world.getBlockState(below); }
 		}
 		if (!world.canPlayerModifyAt(p, pos) || p.isBlockBreakingRestricted(world, pos, p.interactionManager.getGameMode())) return;
-		if (net.minecraftforge.common.ForgeHooks.onBlockBreakEvent(world, p.interactionManager.getGameMode(), p, pos) == -1) return;
-		world.breakBlock(pos, !p.isCreative(), p);
+		p.interactionManager.tryBreakBlock(pos);
 	}
 }

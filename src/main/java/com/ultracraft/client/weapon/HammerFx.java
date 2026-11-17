@@ -11,7 +11,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -25,7 +25,7 @@ import java.util.List;
  * - and, on Medium / Heavy, a point light (range 30, intensity 30, its range down 160/s), drawn as a flash on the gun.
  */
 public final class HammerFx {
-	private static final Identifier RING = new Identifier(UltraCraft.MOD_ID, "textures/uk/rageeffectwhite.png");
+	private static final Identifier RING = Identifier.of(UltraCraft.MOD_ID, "textures/uk/rageeffectwhite.png");
 
 	private record Ring(Vec3d pos, float grow, float shade, float start) {}
 
@@ -115,7 +115,7 @@ public final class HammerFx {
 		float[][] k = {{-1, -1, 0, 1}, {1, -1, 1, 1}, {1, 1, 1, 0}, {-1, 1, 0, 0}};
 		for (float[] q : k) {
 			float x = (float) c.x + (right.x * q[0] + up.x * q[1]) * h, y = (float) c.y + (right.y * q[0] + up.y * q[1]) * h, z = (float) c.z + (right.z * q[0] + up.z * q[1]) * h;
-			vc.vertex(m, x, y, z).color(shade, shade, shade, a).texture(q[2], q[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+			vc.vertex(m, x, y, z).color(shade, shade, shade, a).texture(q[2], q[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 		}
 	}
 }

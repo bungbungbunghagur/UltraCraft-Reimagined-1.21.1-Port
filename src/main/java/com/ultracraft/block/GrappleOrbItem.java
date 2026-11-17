@@ -3,7 +3,7 @@ package com.ultracraft.block;
 import net.minecraft.block.Block;
 import net.minecraft.client.render.item.BuiltinModelItemRenderer;
 import net.minecraft.item.BlockItem;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 import java.util.function.Consumer;
 

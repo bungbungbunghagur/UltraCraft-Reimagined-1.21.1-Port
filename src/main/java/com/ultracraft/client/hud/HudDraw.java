@@ -27,6 +27,7 @@ import org.joml.Quaternionf;
 public final class HudDraw {
 	public static final String TEX = "textures/uk/";
 	private static Matrix4f savedProjection;
+	private static float[] fontLeftBearings, fontRightBearings;
 	private final MatrixStack ms = new MatrixStack();
 	private final MinecraftClient client = MinecraftClient.getInstance();
 	private final VertexConsumerProvider.Immediate buffers = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
@@ -39,8 +40,8 @@ public final class HudDraw {
 		float aspect = (float) client.getWindow().getFramebufferWidth() / client.getWindow().getFramebufferHeight();
 		Matrix4f proj = new Matrix4f().perspective((float) Math.toRadians(fov), aspect, 0.05f, 50f);
 		RenderSystem.setProjectionMatrix(proj, VertexSorter.BY_DISTANCE);
-		RenderSystem.getModelViewStack().push();
-		RenderSystem.getModelViewStack().loadIdentity();
+		RenderSystem.getModelViewStack().pushMatrix();
+		RenderSystem.getModelViewStack().identity();
 		RenderSystem.applyModelViewMatrix();
 		RenderSystem.disableDepthTest();
 		RenderSystem.enableBlend();
@@ -59,7 +60,7 @@ public final class HudDraw {
 		buffers.draw();
 		RenderSystem.enableCull();
 		RenderSystem.enableDepthTest();
-		RenderSystem.getModelViewStack().pop();
+		RenderSystem.getModelViewStack().popMatrix();
 		RenderSystem.applyModelViewMatrix();
 		RenderSystem.setProjectionMatrix(savedProjection, VertexSorter.BY_DISTANCE);
 	}
@@ -99,7 +100,7 @@ public final class HudDraw {
 	}
 
 	public static Identifier tex(String name) {
-		return new Identifier(UltraCraft.MOD_ID, TEX + name + ".png");
+		return Identifier.of(UltraCraft.MOD_ID, TEX + name + ".png");
 	}
 
 	/** Solid rectangle (y up), colour as floats. */
@@ -108,12 +109,11 @@ public final class HudDraw {
 		blend();
 		RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 		Matrix4f m = matrix();
-		BufferBuilder bb = Tessellator.getInstance().getBuffer();
-		bb.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-		bb.vertex(m, x0, y0, 0).color(r, g, b, a).next();
-		bb.vertex(m, x1, y0, 0).color(r, g, b, a).next();
-		bb.vertex(m, x1, y1, 0).color(r, g, b, a).next();
-		bb.vertex(m, x0, y1, 0).color(r, g, b, a).next();
+		BufferBuilder bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+		bb.vertex(m, x0, y0, 0).color(r, g, b, a);
+		bb.vertex(m, x1, y0, 0).color(r, g, b, a);
+		bb.vertex(m, x1, y1, 0).color(r, g, b, a);
+		bb.vertex(m, x0, y1, 0).color(r, g, b, a);
 		BufferRenderer.drawWithGlobalProgram(bb.end());
 	}
 
@@ -124,12 +124,11 @@ public final class HudDraw {
 		RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
 		RenderSystem.setShaderTexture(0, texture);
 		Matrix4f m = matrix();
-		BufferBuilder bb = Tessellator.getInstance().getBuffer();
-		bb.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-		bb.vertex(m, x0, y0, 0).texture(u0, v1).color(r, g, b, a).next();
-		bb.vertex(m, x1, y0, 0).texture(u1, v1).color(r, g, b, a).next();
-		bb.vertex(m, x1, y1, 0).texture(u1, v0).color(r, g, b, a).next();
-		bb.vertex(m, x0, y1, 0).texture(u0, v0).color(r, g, b, a).next();
+		BufferBuilder bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+		bb.vertex(m, x0, y0, 0).texture(u0, v1).color(r, g, b, a);
+		bb.vertex(m, x1, y0, 0).texture(u1, v1).color(r, g, b, a);
+		bb.vertex(m, x1, y1, 0).texture(u1, v0).color(r, g, b, a);
+		bb.vertex(m, x0, y1, 0).texture(u0, v0).color(r, g, b, a);
 		BufferRenderer.drawWithGlobalProgram(bb.end());
 	}
 
@@ -156,16 +155,15 @@ public final class HudDraw {
 		RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
 		RenderSystem.setShaderTexture(0, texture);
 		Matrix4f m = matrix();
-		BufferBuilder bb = Tessellator.getInstance().getBuffer();
-		bb.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+		BufferBuilder bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				float qx0 = xs[i], qx1 = xs[i + 1], qy1 = ys[j], qy0 = ys[j + 1];
 				if (qx1 <= qx0 || qy1 <= qy0) continue;
-				bb.vertex(m, qx0, qy0, 0).texture(us[i], vs[j + 1]).color(r, g, b, a).next();
-				bb.vertex(m, qx1, qy0, 0).texture(us[i + 1], vs[j + 1]).color(r, g, b, a).next();
-				bb.vertex(m, qx1, qy1, 0).texture(us[i + 1], vs[j]).color(r, g, b, a).next();
-				bb.vertex(m, qx0, qy1, 0).texture(us[i], vs[j]).color(r, g, b, a).next();
+				bb.vertex(m, qx0, qy0, 0).texture(us[i], vs[j + 1]).color(r, g, b, a);
+				bb.vertex(m, qx1, qy0, 0).texture(us[i + 1], vs[j + 1]).color(r, g, b, a);
+				bb.vertex(m, qx1, qy1, 0).texture(us[i + 1], vs[j]).color(r, g, b, a);
+				bb.vertex(m, qx0, qy1, 0).texture(us[i], vs[j]).color(r, g, b, a);
 			}
 		}
 		BufferRenderer.drawWithGlobalProgram(bb.end());
@@ -177,16 +175,80 @@ public final class HudDraw {
 	 * Text in the HUD font, `size` canvas units tall (TMP font size), baseline-top at `y` (top of the line, y up).
 	 */
 	public void text(Text text, float x, float y, float size, Align align, int argb) {
+		text(text, x, y, size, align, argb, true);
+	}
+
+	public void text(Text text, float x, float y, float size, Align align, int argb, boolean lowerForFontMetrics) {
 		TextRenderer tr = client.textRenderer;
 		float s = size / FONT_PX * fontScale;
 		float w = tr.getWidth(text) * s;
-		float x0 = align == Align.LEFT ? x : align == Align.CENTER ? x - w / 2 : x - w;
+		String value = text.getString();
+		int first = 0, last = value.length() - 1;
+		while (first <= last && Character.isWhitespace(value.charAt(first))) first++;
+		while (last >= first && Character.isWhitespace(value.charAt(last))) last--;
+		float leftBearing = first <= last ? glyphLeftBearing(value.charAt(first)) * tr.getWidth(Text.literal(value.substring(first, first + 1)).setStyle(text.getStyle())) * s : 0;
+		float rightBearing = first <= last ? glyphRightBearing(value.charAt(last)) * tr.getWidth(Text.literal(value.substring(last, last + 1)).setStyle(text.getStyle())) * s : 0;
+		float x0 = switch (align) {
+			case LEFT -> x - leftBearing;
+			case CENTER -> x - w / 2 - (leftBearing - rightBearing) / 2;
+			case RIGHT -> x - w + rightBearing;
+		};
 		ms.push();
-		ms.translate(x0, y, 0);
+		// The imported HUD font's visible glyphs sit slightly high against the original TMP layout.
+		// Lower text alone so the rank sprites and the rest of the HUD artwork keep their alignment.
+		ms.translate(x0, y + textYOffset - (lowerForFontMetrics ? FONT_PX * 0.5625f * s : 0), 0);
 		ms.scale(s, -s, 1);
 		tr.draw(text, 0, 0, argb, false, ms.peek().getPositionMatrix(), buffers, TextRenderer.TextLayerType.NORMAL, 0, 0xF000F0);
 		buffers.draw();
 		ms.pop();
+	}
+
+	private static float glyphLeftBearing(char c) {
+		loadFontBearings();
+		return c < 128 ? fontLeftBearings[c] : 0;
+	}
+
+	private static float glyphRightBearing(char c) {
+		loadFontBearings();
+		return c < 128 ? fontRightBearings[c] : 0;
+	}
+
+	private static void loadFontBearings() {
+		if (fontLeftBearings == null) {
+			fontLeftBearings = new float[128];
+			fontRightBearings = new float[128];
+			try {
+				var res = MinecraftClient.getInstance().getResourceManager().getResource(Identifier.of(UltraCraft.MOD_ID, "font/vcr_osd_mono.ttf"));
+				if (res.isPresent()) {
+					byte[] bytes;
+					try (var in = res.get().getInputStream()) {
+						bytes = in.readAllBytes();
+					}
+					java.nio.ByteBuffer buf = org.lwjgl.system.MemoryUtil.memAlloc(bytes.length).put(bytes).flip();
+					try (var info = org.lwjgl.stb.STBTTFontinfo.malloc(); var stack = org.lwjgl.system.MemoryStack.stackPush()) {
+						if (org.lwjgl.stb.STBTruetype.stbtt_InitFont(info, buf)) {
+							var advance = stack.mallocInt(1);
+							var left = stack.mallocInt(1);
+							var x0 = stack.mallocInt(1);
+							var y0 = stack.mallocInt(1);
+							var x1 = stack.mallocInt(1);
+							var y1 = stack.mallocInt(1);
+							for (int cp = 33; cp < 127; cp++) {
+								org.lwjgl.stb.STBTruetype.stbtt_GetCodepointHMetrics(info, cp, advance, left);
+								if (advance.get(0) > 0 && org.lwjgl.stb.STBTruetype.stbtt_GetCodepointBox(info, cp, x0, y0, x1, y1)) {
+									fontLeftBearings[cp] = left.get(0) / (float) advance.get(0);
+									fontRightBearings[cp] = (advance.get(0) - x1.get(0)) / (float) advance.get(0);
+								}
+							}
+						}
+					} finally {
+						org.lwjgl.system.MemoryUtil.memFree(buf);
+					}
+				}
+			} catch (Exception ex) {
+				UltraCraft.LOG.warn("HUD font metrics not read: {}", ex.toString());
+			}
+		}
 	}
 
 	public void text(String s, float x, float y, float size, Align align, int argb) {
@@ -199,6 +261,8 @@ public final class HudDraw {
 
 	/** Live calibration of TMP point size → our font (hud.fontScale). */
 	public float fontScale = 1f;
+	/** Per-panel text adjustment in canvas units; the gun stats and style canvases need different alignment. */
+	public float textYOffset = -8f;
 
 	public static int argb(float r, float g, float b, float a) {
 		return ((int) (a * 255) << 24) | ((int) (r * 255) << 16) | ((int) (g * 255) << 8) | (int) (b * 255);

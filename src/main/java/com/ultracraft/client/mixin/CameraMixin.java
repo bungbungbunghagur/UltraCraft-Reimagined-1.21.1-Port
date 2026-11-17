@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 abstract class CameraMixin {
 	@Shadow @Final private Quaternionf rotation;
 
-	@Shadow protected abstract void moveBy(double forward, double up, double right);
+	@Shadow protected abstract void moveBy(float forward, float up, float right);
 
 	@Shadow protected abstract void setPos(net.minecraft.util.math.Vec3d pos);
 
@@ -39,7 +39,7 @@ abstract class CameraMixin {
 			sx = (Math.random() * 2 - 1) * amt * 0.1;
 			sy = (Math.random() * 2 - 1) * amt * 0.1;
 		}
-		if (drop != 0 || sx != 0 || sy != 0) this.moveBy(0, -drop + sy, -sx);
+		if (drop != 0 || sx != 0 || sy != 0) this.moveBy(0, (float) (-drop + sy), (float) -sx);
 		// (the shake's move this frame: things drawn over the world at a point in it, the muzzle flash, follow it)
 		s.shakeRight = -sx;
 		s.shakeUp = sy;

@@ -60,7 +60,7 @@ public final class GrappleOrbRenderer implements BlockEntityRenderer<GrappleOrbB
 	public GrappleOrbRenderer(BlockEntityRendererFactory.Context ctx) {}
 
 	private static Identifier tex(String name) {
-		return new Identifier(UltraCraft.MOD_ID, "textures/uk/" + name + ".png");
+		return Identifier.of(UltraCraft.MOD_ID, "textures/uk/" + name + ".png");
 	}
 
 	/** HookPoint.Update's scales and the Spins, from the time since the last call (frame or tick, whichever comes). */
@@ -216,8 +216,9 @@ public final class GrappleOrbRenderer implements BlockEntityRenderer<GrappleOrbB
 			b = Math.min(1, color[2]);
 		}
 		float u = mesh.uvs.length > i * 2 + 1 ? mesh.uvs[i * 2] : 0, w = mesh.uvs.length > i * 2 + 1 ? 1 - mesh.uvs[i * 2 + 1] : 0;
+		Vector3f normal = nm.transform(new Vector3f(nr[i * 3], nr[i * 3 + 1], -nr[i * 3 + 2])).normalize();
 		vc.vertex(pm, p[i * 3] * k, p[i * 3 + 1] * k, -p[i * 3 + 2] * k).color(r, g, b, 1f).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(light)
-			.normal(nm, nr[i * 3], nr[i * 3 + 1], -nr[i * 3 + 2]).next();
+			.normal(normal.x, normal.y, normal.z);
 	}
 
 	/** A sprite quad `size` units wide in the plane of `m` (its z toward the camera), full bright. */
@@ -227,7 +228,8 @@ public final class GrappleOrbRenderer implements BlockEntityRenderer<GrappleOrbB
 		Vector3f v = new Vector3f();
 		for (float[] q : corners) {
 			m.transformPosition(v.set(q[0], q[1], 0));
-			vc.vertex(pm, v.x * k, v.y * k, -v.z * k).color(r, g, b, a).texture(q[2], q[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(nm, 0, 1, 0).next();
+			Vector3f normal = nm.transform(new Vector3f(0, 1, 0)).normalize();
+			vc.vertex(pm, v.x * k, v.y * k, -v.z * k).color(r, g, b, a).texture(q[2], q[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(normal.x, normal.y, normal.z);
 		}
 	}
 

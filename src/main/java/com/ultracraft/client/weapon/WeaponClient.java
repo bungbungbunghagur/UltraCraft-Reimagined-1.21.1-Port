@@ -568,7 +568,8 @@ public final class WeaponClient {
 			g.prevX = start.x - mx; g.prevY = start.y - my; g.prevZ = start.z - mz;
 			g.lastRenderX = g.prevX; g.lastRenderY = g.prevY; g.lastRenderZ = g.prevZ;
 			g.setVelocity(vel.multiply(S * 0.05)); // blocks per tick
-			mc.world.addEntity(nextGhostId--, g);
+			g.setId(nextGhostId--);
+			mc.world.addEntity(g);
 			com.ultracraft.entity.CoinEntity.clientGhost = g;
 		}
 		if (com.ultracraft.weapon.Damage.debug) UltraCraft.LOG.info("[weapons] coin throw: start {} cam {} v1vel {} (u/s) moved/tick {} vel {}", start, cam, V1.INSTANCE.vel,

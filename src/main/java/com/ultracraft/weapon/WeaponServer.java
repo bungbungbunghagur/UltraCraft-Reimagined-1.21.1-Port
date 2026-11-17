@@ -18,8 +18,8 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.List;
 
@@ -173,30 +173,30 @@ public final class WeaponServer {
 		LavaServer.init();
 		DebugCommands.init();
 		Shop.init();
-		MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.ServerTickEvent e) -> { if (e.phase == net.minecraftforge.event.TickEvent.Phase.END) { ArsenalServer.tickLater(); tickReleased(); tickHeldAi(); recordBoxes(e.getServer()); ParryWarn.tick(e.getServer()); BossRewards.tick(e.getServer()); BloodHeal.tick(); } });
+		NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e) -> { ArsenalServer.tickLater(); tickReleased(); tickHeldAi(); recordBoxes(e.getServer()); ParryWarn.tick(e.getServer()); BossRewards.tick(e.getServer()); BloodHeal.tick(); });
 		// the Iron Golem's hits on V1: Minecraft's own (7.5-21.5 on Normal, a one-hit kill possible; user's call) unless
 		// mob.ironGolem.attack sets a fixed amount (the Cerberus it plays: StatueBoss tackle / stomp orb 25 of 100 = 5)
-		MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.living.LivingHurtEvent e) -> {
+		NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Pre e) -> {
 			double fixed = ServerTune.get("mob.ironGolem.attack", 0);
 			if (fixed > 0 && e.getEntity() instanceof ServerPlayerEntity && e.getSource().getAttacker() instanceof net.minecraft.entity.passive.IronGolemEntity)
-				e.setAmount((float) fixed);
+				e.setNewDamage((float) fixed);
 		});
 		// a boss killed pays its P bonus (BossRewards)
-		MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.living.LivingDeathEvent e) -> {
+		NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
 			if (!e.getEntity().getWorld().isClient) BossRewards.onDeath(e.getEntity(), e.getSource());
 		});
 		// no hunger (HungerManagerMixin): food heals directly, its hunger value in health (a steak's 8 = 4 hearts)
-		MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.entity.living.LivingEntityUseItemEvent.Finish e) -> {
+		NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish e) -> {
 			if (!(e.getEntity() instanceof ServerPlayerEntity p) || ServerTune.get("food.vanillaHunger", 0) != 0) return;
 			var food = e.getItem().getFoodProperties(p);
-			if (food != null && food.getHunger() > 0) p.heal((float) (food.getHunger() * ServerTune.get("food.healPerHunger", 1.0)));
+			if (food != null && food.nutrition() > 0) p.heal((float) (food.nutrition() * ServerTune.get("food.healPerHunger", 1.0)));
 		});
 		// the Drowning option (off by default): the player's air stays full under water
-		MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.TickEvent.PlayerTickEvent e) -> {
-			if (e.phase == net.minecraftforge.event.TickEvent.Phase.END && !e.player.getWorld().isClient && !com.ultracraft.UkConfig.drowning())
-				e.player.setAir(e.player.getMaxAir());
+		NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.PlayerTickEvent.Post e) -> {
+			if (!e.getEntity().getWorld().isClient && !com.ultracraft.UkConfig.drowning())
+				e.getEntity().setAir(e.getEntity().getMaxAir());
 		});
-		MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent e) -> {
+		NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent e) -> {
 			if (e.getEntity() instanceof ServerPlayerEntity p) {
 				com.ultracraft.net.Net.clearOffhand(p);
 				Shop.onLogin(p, p.getPersistentData().getCompound("PlayerPersisted").getBoolean("ultracraft.starter"));

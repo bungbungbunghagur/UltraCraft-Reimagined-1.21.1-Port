@@ -60,10 +60,10 @@ public final class GunDisplays {
 		Tune.def("view.sharpW", 3.4, "Sharpshooter meters: width of each line, canvas units (the game: 3.75)");
 		Tune.def("view.sharpH", 10, "Sharpshooter meters: height of each line, canvas units (the game: 11)");
 		Tune.def("view.canvasMirror", 1, "1 = the gun canvases (Marksman dots, Sharpshooter meters) are drawn x-mirrored (the rig's z mirror flips them)");
-		Tune.def("view.flashLayer", 2, "muzzle flash: 2 = on the screen layer after the shader pack (true colours), 1 = solid in the world, 0 = see-through in the world");
+		Tune.def("view.flashLayer", 1, "muzzle flash: 2 = on the screen layer after the shader pack (true colours), 1 = solid in the viewmodel at the gun muzzle, 0 = see-through in the viewmodel");
 		Tune.def("view.twirlSize", 1, "Sharpshooter twirl ring size (1 = the game's 0.32 u x 0.381 on the gun bone)");
 		Tune.def("view.twirlAlpha", 1, "Sharpshooter twirl ring opacity multiplier (the game: 1/3, then 2/3 with charge)");
-		Tune.def("view.flashBehindGun", 1, "1 = the screen-layer muzzle flash is hidden behind the gun (depth tested against it); 0 = on top");
+		Tune.def("view.flashBehindGun", 0, "1 = depth-test the screen-layer muzzle flash behind the gun; 0 = draw in front");
 		Tune.def("view.flashScreenYellow", 0, "yellow tint on the screen-layer flash (0 = the sprite's own colours)");
 		Tune.def("view.flashEnd", 0.5, "muzzle flash size and opacity when it disappears (the game: about half)");
 		Tune.def("view.muzzleCutHi", 0.65, "muzzle light: full while its intensity is above this share (0..1)");
@@ -90,7 +90,7 @@ public final class GunDisplays {
 	private static final double FLASH_TIME = Tune.def("view.flashTime", 0.1, "muzzle flash life in s (RemoveOnTime 0.1)");
 	private static final double CHARGE_SIZE = Tune.def("view.chargeSize", 0.005, "Piercer ChargeEffect glow size per charge point (u)");
 
-	private static final Identifier WHITE = new Identifier("minecraft", "textures/misc/white.png");
+	private static final Identifier WHITE = Identifier.of("minecraft", "textures/misc/white.png");
 	private static float flashTime;
 	private static String flashSprite, flashRig, flashBone;
 	private static float flashSize = 1;
@@ -122,8 +122,8 @@ public final class GunDisplays {
 		com.mojang.blaze3d.systems.RenderSystem.backupProjectionMatrix();
 		com.mojang.blaze3d.systems.RenderSystem.setProjectionMatrix(proj, com.mojang.blaze3d.systems.VertexSorter.BY_DISTANCE);
 		var mv = com.mojang.blaze3d.systems.RenderSystem.getModelViewStack();
-		mv.push();
-		mv.loadIdentity();
+		mv.pushMatrix();
+		mv.identity();
 		com.mojang.blaze3d.systems.RenderSystem.applyModelViewMatrix();
 		com.mojang.blaze3d.systems.RenderSystem.clear(org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT, net.minecraft.client.MinecraftClient.IS_SYSTEM_MAC);
 		com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
@@ -158,9 +158,8 @@ public final class GunDisplays {
 		com.mojang.blaze3d.systems.RenderSystem.disableCull();
 		com.mojang.blaze3d.systems.RenderSystem.depthMask(false);
 		com.mojang.blaze3d.systems.RenderSystem.setShader(net.minecraft.client.render.GameRenderer::getPositionTexColorProgram);
-		com.mojang.blaze3d.systems.RenderSystem.setShaderTexture(0, new Identifier(UltraCraft.MOD_ID, "textures/uk/" + screenFlashSprite + ".png"));
-		var bb = net.minecraft.client.render.Tessellator.getInstance().getBuffer();
-		bb.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, net.minecraft.client.render.VertexFormats.POSITION_TEXTURE_COLOR);
+		com.mojang.blaze3d.systems.RenderSystem.setShaderTexture(0, Identifier.of(UltraCraft.MOD_ID, "textures/uk/" + screenFlashSprite + ".png"));
+		var bb = net.minecraft.client.render.Tessellator.getInstance().begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, net.minecraft.client.render.VertexFormats.POSITION_TEXTURE_COLOR);
 		// pushed back along the view ray (same size and place on screen): the alternate's ShootPoint (1) sits at the
 		// muzzle's very tip, in front of its own barrel; further back the gun covers the flash like the normal one's
 		float push = screenFlashRig != null && screenFlashRig.endsWith("_alt") ? Tune.getF("view.altFlashPush") : Tune.getF("view.flashPush");
@@ -186,7 +185,7 @@ public final class GunDisplays {
 			float c2 = star == 0 ? cs : (float) Math.cos(screenFlashSpin + Math.PI / 4), s2 = star == 0 ? sn : (float) Math.sin(screenFlashSpin + Math.PI / 4);
 			for (float[] q : corners) {
 				float x = q[0] * h2, y = q[1] * h2;
-				bb.vertex(id, fv.x + x * c2 - y * s2, fv.y + x * s2 + y * c2, fv.z).texture(q[2], q[3]).color(1f, g, bl, alpha).next();
+				bb.vertex(id, fv.x + x * c2 - y * s2, fv.y + x * s2 + y * c2, fv.z).texture(q[2], q[3]).color(1f, g, bl, alpha);
 			}
 		}
 		net.minecraft.client.render.BufferRenderer.drawWithGlobalProgram(bb.end());
@@ -194,7 +193,7 @@ public final class GunDisplays {
 		com.mojang.blaze3d.systems.RenderSystem.enableCull();
 		// restore the GUI state
 		com.mojang.blaze3d.systems.RenderSystem.clear(org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT, net.minecraft.client.MinecraftClient.IS_SYSTEM_MAC);
-		mv.pop();
+		mv.popMatrix();
 		com.mojang.blaze3d.systems.RenderSystem.applyModelViewMatrix();
 		com.mojang.blaze3d.systems.RenderSystem.restoreProjectionMatrix();
 		return true;
@@ -240,10 +239,9 @@ public final class GunDisplays {
 		com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
 		com.mojang.blaze3d.systems.RenderSystem.disableCull();
 		com.mojang.blaze3d.systems.RenderSystem.setShader(net.minecraft.client.render.GameRenderer::getPositionTexColorProgram);
-		com.mojang.blaze3d.systems.RenderSystem.setShaderTexture(0, new Identifier(UltraCraft.MOD_ID, "textures/uk/" + screenFlashSprite + ".png"));
+		com.mojang.blaze3d.systems.RenderSystem.setShaderTexture(0, Identifier.of(UltraCraft.MOD_ID, "textures/uk/" + screenFlashSprite + ".png"));
 		Matrix4f m = ctx.getMatrices().peek().getPositionMatrix();
-		var bb = net.minecraft.client.render.Tessellator.getInstance().getBuffer();
-		bb.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, net.minecraft.client.render.VertexFormats.POSITION_TEXTURE_COLOR);
+		var bb = net.minecraft.client.render.Tessellator.getInstance().begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, net.minecraft.client.render.VertexFormats.POSITION_TEXTURE_COLOR);
 		float cs = (float) Math.cos(screenFlashSpin), sn = (float) Math.sin(screenFlashSpin);
 		float[][] corners = {{-1, -1, 0, 1}, {1, -1, 1, 1}, {1, 1, 1, 0}, {-1, 1, 0, 0}};
 		float g = 1f - 0.1f * k, bl = 1f - 0.75f * k;
@@ -252,7 +250,7 @@ public final class GunDisplays {
 			float c2 = star == 0 ? cs : (float) Math.cos(screenFlashSpin + Math.PI / 4), s2 = star == 0 ? sn : (float) Math.sin(screenFlashSpin + Math.PI / 4);
 			for (float[] q : corners) {
 				float x = q[0] * h2, y = -q[1] * h2;
-				bb.vertex(m, cx + x * c2 - y * s2, cy + x * s2 + y * c2, 0).texture(q[2], q[3]).color(1f, g, bl, alpha).next();
+				bb.vertex(m, cx + x * c2 - y * s2, cy + x * s2 + y * c2, 0).texture(q[2], q[3]).color(1f, g, bl, alpha);
 			}
 		}
 		net.minecraft.client.render.BufferRenderer.drawWithGlobalProgram(bb.end());
@@ -408,7 +406,7 @@ public final class GunDisplays {
 		if (c.world == null || c.player == null || Tune.get("view.projLight") <= 0) return null;
 		double S = com.ultracraft.weapon.Damage.SCALE_BLOCKS, range = 10 * S;
 		net.minecraft.util.math.Vec3d cam = c.gameRenderer.getCamera().getPos();
-		float td = c.getTickDelta(), best = 0;
+		float td = c.getRenderTickCounter().getTickDelta(false), best = 0;
 		net.minecraft.util.math.Vec3d dir = null;
 		for (var e : c.world.getEntitiesByClass(com.ultracraft.entity.UKProjectileEntity.class, new net.minecraft.util.math.Box(cam, cam).expand(range), x -> true)) {
 			var k = e.kind();
@@ -704,7 +702,7 @@ public final class GunDisplays {
 
 	/** A camera-facing arc sprite turned by `rot`, in three strips whose outer ends fade to clear (the arcs run to the frame's edges). */
 	private static void arcQuad(VertexConsumerProvider buffers, Matrix4f pm, Vector4f c, String sprite, float size, float rot, float r, float g, float b, float a) {
-		Identifier id = new Identifier(UltraCraft.MOD_ID, "textures/uk/" + sprite + ".png");
+		Identifier id = Identifier.of(UltraCraft.MOD_ID, "textures/uk/" + sprite + ".png");
 		VertexConsumer vc = buffers.getBuffer(RenderLayer.getEntityTranslucentEmissive(id));
 		float h = size / 2, cs = (float) Math.cos(rot), sn = (float) Math.sin(rot);
 		float f = (float) Math.max(0, Math.min(0.49, Tune.get("rail.arcFade")));
@@ -728,7 +726,7 @@ public final class GunDisplays {
 	private static final double NAIL_HEAT_FAR = Tune.def("nail.heatFar", 2, "nailgun barrel heat: full glow beyond this, u (_EmissiveFogStart 2)");
 	private static final double NAIL_HEAT_NEAR_A = Tune.def("nail.heatNearAlpha", 0, "nailgun barrel heat: how much of the shell shows at the near end (0 = none)");
 	private static final double NAIL_TEXT = Tune.def("view.nailTextSize", 20, "nailgun display: ammo count digit height, canvas units (Text: 240 at x0.1)");
-	private static final Identifier DIGITS = new Identifier(UltraCraft.MOD_ID, "textures/uk/digits.png");
+	private static final Identifier DIGITS = Identifier.of(UltraCraft.MOD_ID, "textures/uk/digits.png");
 
 	/**
 	 * A number on a canvas from digits.png (0-9 of the game's VCR OSD Mono, made by build_assets), centred at (cx, cy),
@@ -805,11 +803,11 @@ public final class GunDisplays {
 		float fr, fg, fb;
 		if (h <= 0 && sinks < 1) { fr = fg = fb = 0; }
 		else { fr = 0.33f + (1f - 0.33f) * h; fg = 0.33f + (0.5f - 0.33f) * h; fb = 0.33f * (1 - h); }
-		VertexConsumer frame = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/heatsinkmeter.png")));
+		VertexConsumer frame = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/heatsinkmeter.png")));
 		rectUV(frame, pm, cb, -32, 12 * fy, 32, -4 * fy, 0.002f, 0, 0, 1, 1, fr, fg, fb, 1);
 		// the heat
 		if (h > 0) {
-			VertexConsumer fill = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/meter_2.png")));
+			VertexConsumer fill = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/meter_2.png")));
 			rectUV(fill, pm, cb, -24.5f, 7 * fy, -24.5f + 45 * h, 1 * fy, 0.003f, 0, 0, 1, 1, 1f, 0.5f, 0f, 1);
 		}
 		// the heat sinks
@@ -817,7 +815,7 @@ public final class GunDisplays {
 		int slot = oneSink ? 1 : 0, n = oneSink ? 1 : 2;
 		float target = Math.max(0, Math.min(n, sinks));
 		overheatSinkFill[slot] += Math.signum(target - overheatSinkFill[slot]) * Math.min(Math.abs(target - overheatSinkFill[slot]), 20 * dt);
-		VertexConsumer sink = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/heatsinkmeterfilled.png")));
+		VertexConsumer sink = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/heatsinkmeterfilled.png")));
 		for (int i = 0; i < n; i++) {
 			float f = Math.max(0, Math.min(1, overheatSinkFill[slot] - i));
 			if (f <= 0) continue;
@@ -827,9 +825,9 @@ public final class GunDisplays {
 		}
 	}
 
-	private static final Identifier GLYPHS = new Identifier(UltraCraft.MOD_ID, "textures/uk/glyphs.png");
-	private static final Identifier ICON2 = new Identifier(UltraCraft.MOD_ID, "textures/uk/heatsinkmeterfilled_2.png");
-	private static final Identifier METER1 = new Identifier(UltraCraft.MOD_ID, "textures/uk/heatsinkmeterfilled_1.png");
+	private static final Identifier GLYPHS = Identifier.of(UltraCraft.MOD_ID, "textures/uk/glyphs.png");
+	private static final Identifier ICON2 = Identifier.of(UltraCraft.MOD_ID, "textures/uk/heatsinkmeterfilled_2.png");
+	private static final Identifier METER1 = Identifier.of(UltraCraft.MOD_ID, "textures/uk/heatsinkmeterfilled_1.png");
 
 	/** The buffer for a display texture, fetched at the point of drawing (see nailgunAttractor). */
 	/**
@@ -949,7 +947,7 @@ public final class GunDisplays {
 		// quads are sorted by distance, so the meter's thin ticks could land on top of the black)
 		if (recharging) {
 			rect(white, pm, cb, -32, -12, 32, 12, 0.0045f, 0, 0, 0, 1);
-			VertexConsumer clock = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/zappertimer.png")));
+			VertexConsumer clock = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/zappertimer.png")));
 			squareFill(clock, pm, cb, 0, -3 * fy, 8, 0.005f, recharge / 5, 1, 1, 1, 1);
 			label(buffers, pm, cb, "RECHARGING...", 0, 12 - 3.4f, (float) Tune.get("view.zapTextSize") * 6.8f / 6f, 0.005f, 1, 1, 1, fy);
 			return;
@@ -973,13 +971,13 @@ public final class GunDisplays {
 			float zv = Math.max(0, Math.min(1, zapValue));
 			chamferRect(white, pm, cb, -32, -11 * fy, 32, -6 * fy, 0.002f, corner, 1f, 0.235f, 0.235f, 1);
 			if (zv > 0) chamferRect(white, pm, cb, -32, -11 * fy, -32 + 64 * zv, -6 * fy, 0.0025f, corner, 1, 1, 1, 1);
-			VertexConsumer bolt = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/lightningboltsmall.png")));
+			VertexConsumer bolt = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/lightningboltsmall.png")));
 
 			rectUV(bolt, pm, cb, -29, -10.5f * fy, -25, -6.5f * fy, 0.003f, 0, 0, 1, 1, 0, 0, 0, 1);
 		}
 		// the warning X
 		if (showX) {
-			VertexConsumer xv = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/pixelx_1.png")));
+			VertexConsumer xv = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/pixelx_1.png")));
 			rectUV(xv, pm, cb, -15, -15 * fy, 15, 15 * fy, 0.004f, 0, 0, 1, 1, 1, xWhite ? 1 : 0, xWhite ? 1 : 0, 1);
 		}
 	}
@@ -1049,7 +1047,7 @@ public final class GunDisplays {
 		Matrix4f cb = new Matrix4f(body).translate(0, missing, 0).mul(local);
 		ArsenalClient a = ArsenalClient.cur();
 		// (the timers step at 20 Hz: shown between last tick and this one)
-		float td = net.minecraft.client.MinecraftClient.getInstance().getTickDelta();
+		float td = net.minecraft.client.MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false);
 		float cbc = a.cbCharge > 0 ? a.prevCbCharge + (a.cbCharge - a.prevCbCharge) * td : 0;
 		float value, num = 1, r = vr, g = vg, b = vb;
 		if (variation == 0) value = (a.prevRocketFreezeTime + (a.rocketFreezeTime - a.prevRocketFreezeTime) * td) / 5f;
@@ -1070,12 +1068,12 @@ public final class GunDisplays {
 		// multipliers per variant, live (holoShader.<blue|green|red>.<part>.color / .alpha; by eye)
 		boolean sh = com.ultracraft.client.render.UkLayers.shadersOn();
 		String vn = HOLO_VARIANTS[Math.max(0, Math.min(2, variation))];
-		Identifier gradTex = new Identifier(UltraCraft.MOD_ID, "textures/uk/verticalgradient.png");
+		Identifier gradTex = Identifier.of(UltraCraft.MOD_ID, "textures/uk/verticalgradient.png");
 		// Fade, Outer Ring (alpha 0.349)
 		float[] m = holoPart(sh, vn, "fade");
-		spriteQuad(holo(buffers, new Identifier(UltraCraft.MOD_ID, "textures/uk/fadetowhite.png")), pm, cb, -30, 0, 100, 100, 0.5f, 0.5f, -90, 0.001f, c01(r * m[0]), c01(g * m[0]), c01(b * m[0]), c01(0.349f * num * m[1]));
+		spriteQuad(holo(buffers, Identifier.of(UltraCraft.MOD_ID, "textures/uk/fadetowhite.png")), pm, cb, -30, 0, 100, 100, 0.5f, 0.5f, -90, 0.001f, c01(r * m[0]), c01(g * m[0]), c01(b * m[0]), c01(0.349f * num * m[1]));
 		m = holoPart(sh, vn, "ring");
-		spriteQuad(holo(buffers, new Identifier(UltraCraft.MOD_ID, "textures/uk/rageeffectwhite.png")), pm, cb, 0, 0, 128, 128, 0.5f, 0.5f, 0, 0.0015f, c01(r * m[0]), c01(g * m[0]), c01(b * m[0]), c01(0.349f * num * m[1]));
+		spriteQuad(holo(buffers, Identifier.of(UltraCraft.MOD_ID, "textures/uk/rageeffectwhite.png")), pm, cb, 0, 0, 128, 128, 0.5f, 0.5f, 0, 0.0015f, c01(r * m[0]), c01(g * m[0]), c01(b * m[0]), c01(0.349f * num * m[1]));
 		// Quartermarkers: {pivot x, pivot y, angle}
 		float[][] marks = {{0, 44, 180}, {-44, 0, -90}, {0, -44, 0}, {44, 0, 90}};
 		m = holoPart(sh, vn, "marks");
@@ -1087,15 +1085,15 @@ public final class GunDisplays {
 		}
 		// Inner Ring: the timer as a Radial360 fill from the right, clockwise
 		m = holoPart(sh, vn, "fill");
-		radialFill(holo(buffers, new Identifier(UltraCraft.MOD_ID, "textures/uk/shockwavefilled.png")), pm, cb, 0, 0, 48, 0, Tune.get("view.holoSpin") > 0, value, 0.0025f, c01(r * m[0]), c01(g * m[0]), c01(b * m[0]), c01(0.349f * num * m[1]));
+		radialFill(holo(buffers, Identifier.of(UltraCraft.MOD_ID, "textures/uk/shockwavefilled.png")), pm, cb, 0, 0, 48, 0, Tune.get("view.holoSpin") > 0, value, 0.0025f, c01(r * m[0]), c01(g * m[0]), c01(b * m[0]), c01(0.349f * num * m[1]));
 		// Clock Center and its arm, turned with the timer (white, not a colourable)
 		float turn = (float) ((360 - 360 * value) * Tune.get("view.holoSpin"));
 		m = holoPart(sh, vn, "center");
-		spriteQuad(holo(buffers, new Identifier(UltraCraft.MOD_ID, "textures/uk/dot.png")), pm, cb, 0, 0, 15, 15, 0.5f, 0.5f, turn, 0.003f, c01(m[0]), c01(m[0]), c01(m[0]), c01(m[1]));
+		spriteQuad(holo(buffers, Identifier.of(UltraCraft.MOD_ID, "textures/uk/dot.png")), pm, cb, 0, 0, 15, 15, 0.5f, 0.5f, turn, 0.003f, c01(m[0]), c01(m[0]), c01(m[0]), c01(m[1]));
 		double tr = Math.toRadians(turn);
 		float ax = (float) (30 * Math.cos(tr)), ay = (float) (30 * Math.sin(tr));
 		m = holoPart(sh, vn, "hand");
-		spriteQuad(holo(buffers, new Identifier(UltraCraft.MOD_ID, "textures/uk/verticalgradientslowfalloff.png")), pm, cb, ax, ay, 5, 50, 0.5f, 0.5f, turn - 90, 0.0035f, c01(m[0]), c01(m[0]), c01(m[0]), c01(m[1]));
+		spriteQuad(holo(buffers, Identifier.of(UltraCraft.MOD_ID, "textures/uk/verticalgradientslowfalloff.png")), pm, cb, ax, ay, 5, 50, 0.5f, 0.5f, turn - 90, 0.0035f, c01(m[0]), c01(m[0]), c01(m[0]), c01(m[1]));
 		// depth for the disc and its fade, just behind every part (the batches are drawn in no set order, so the parts
 		// themselves cannot write depth without hiding each other): shader-pack clouds are composited where depth says sky
 		if (Tune.on("view.holoDepth")) {
@@ -1103,11 +1101,11 @@ public final class GunDisplays {
 			// clock failed the depth test and was cut out of the see-through clock)
 			buffers.draw();
 			// (the parts' own shapes, cut where the sprite is clear: a square mask showed as a hole in the clouds)
-			VertexConsumer rv = buffers.getBuffer(com.ultracraft.client.render.UkLayers.depthOnly(new Identifier(UltraCraft.MOD_ID, "textures/uk/rageeffectwhite.png")));
+			VertexConsumer rv = buffers.getBuffer(com.ultracraft.client.render.UkLayers.depthOnly(Identifier.of(UltraCraft.MOD_ID, "textures/uk/rageeffectwhite.png")));
 			spriteQuad(rv, pm, cb, 0, 0, 128, 128, 0.5f, 0.5f, 0, 0.0005f, 1, 1, 1, 1);
-			VertexConsumer dv = buffers.getBuffer(com.ultracraft.client.render.UkLayers.depthOnly(new Identifier(UltraCraft.MOD_ID, "textures/uk/shockwavefilled.png")));
+			VertexConsumer dv = buffers.getBuffer(com.ultracraft.client.render.UkLayers.depthOnly(Identifier.of(UltraCraft.MOD_ID, "textures/uk/shockwavefilled.png")));
 			spriteQuad(dv, pm, cb, 0, 0, 96, 96, 0.5f, 0.5f, 0, 0.0005f, 1, 1, 1, 1);
-			VertexConsumer fv = buffers.getBuffer(com.ultracraft.client.render.UkLayers.depthOnly(new Identifier(UltraCraft.MOD_ID, "textures/uk/fadetowhite.png")));
+			VertexConsumer fv = buffers.getBuffer(com.ultracraft.client.render.UkLayers.depthOnly(Identifier.of(UltraCraft.MOD_ID, "textures/uk/fadetowhite.png")));
 			spriteQuad(fv, pm, cb, -30, 0, 100, 100, 0.5f, 0.5f, -90, 0.0005f, 1, 1, 1, 1);
 		}
 	}
@@ -1238,7 +1236,7 @@ public final class GunDisplays {
 		Matrix4f sw = gun.boneWorld(H_ROOT + "/MotorSpinner/SpinSprite");
 		float swirlA = (float) (hammerSpeedView / 3 * Tune.get("hammer.swirlAlpha"));
 		if (sw != null && swirlA > 0.004f) {
-			VertexConsumer vc = buffers.getBuffer(com.ultracraft.client.render.UkLayers.solidSmooth(new Identifier(UltraCraft.MOD_ID, "textures/uk/spinswirl.png")));
+			VertexConsumer vc = buffers.getBuffer(com.ultracraft.client.render.UkLayers.solidSmooth(Identifier.of(UltraCraft.MOD_ID, "textures/uk/spinswirl.png")));
 			float h = 0.16f;
 			Vector4f[] q = {pt(sw, -h, -h, 0), pt(sw, h, -h, 0), pt(sw, h, h, 0), pt(sw, -h, h, 0)};
 			float[][] uv = {{0, 1}, {1, 1}, {1, 0}, {0, 0}};
@@ -1281,8 +1279,8 @@ public final class GunDisplays {
 		drawSteam(gun, buffers, pm);
 	}
 
-	private static final Identifier METER_MASK = new Identifier(UltraCraft.MOD_ID, "textures/uk/t_dialmask.png");
-	private static final Identifier METER_MASK_CUT = new Identifier(UltraCraft.MOD_ID, "dynamic/t_dialmask_cut");
+	private static final Identifier METER_MASK = Identifier.of(UltraCraft.MOD_ID, "textures/uk/t_dialmask.png");
+	private static final Identifier METER_MASK_CUT = Identifier.of(UltraCraft.MOD_ID, "dynamic/t_dialmask_cut");
 	private static net.minecraft.client.texture.NativeImageBackedTexture meterCutTex;
 	private static double meterCutMade = -1;
 
@@ -1504,7 +1502,7 @@ public final class GunDisplays {
 		rect(white, pm, cb, -32, -12, 32, 12, 0.001f, 1, 1, 1, 0.078f);
 		if (hud.recharging()) {
 			rect(white, pm, cb, -32, -12, 32, 12, 0.0045f, 0, 0, 0, 1);
-			VertexConsumer clock = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/zappertimer.png")));
+			VertexConsumer clock = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/zappertimer.png")));
 			squareFill(clock, pm, cb, 0, 0, 10, 0.005f, recharge / 5, 1, 1, 1, 1);
 			Object[] ft = fitText("RECHARGING", 24, 21, 8.2f, 4f);
 			float s = (Float) ft[1];
@@ -1534,7 +1532,7 @@ public final class GunDisplays {
 			labelTurned(buffers, pm, cb, lines, 26, 0, s * 56f / 96f, s * 0.885f, s, 0, -1, 0.0038f, hud.sr(), hud.sg(), hud.sb(), fy);
 		}
 		if (hud.showX()) {
-			VertexConsumer xv = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/pixelx_1.png")));
+			VertexConsumer xv = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/pixelx_1.png")));
 			rectUV(xv, pm, cb, -30, -15 * fy, 30, 15 * fy, 0.004f, 0, 0, 1, 1, 1, hud.xWhite() ? 1 : 0, hud.xWhite() ? 1 : 0, 1);
 		}
 	}
@@ -1588,7 +1586,7 @@ public final class GunDisplays {
 					// red while filling, the variation colour once full, nothing while empty
 					VertexConsumer vc = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(WHITE));
 					rect(vc, pm, mb, -0.5f, -0.5f, 0.5f, 0.5f, 0.001f, 0, 0, 0, 1);
-					VertexConsumer dv = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/dot.png")));
+					VertexConsumer dv = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/dot.png")));
 					float coinCharge = w.rev1charge;
 					float dp = (float) Tune.get("view.dotPos") / 15f;
 					float[][] dots = {{-dp, dp}, {dp, dp}, {-dp, -dp}, {dp, -dp}};
@@ -1607,11 +1605,11 @@ public final class GunDisplays {
 					rect(vc, pm, mb, -0.5f, -0.5f, 0.5f, 0.5f, 0.001f, 0, 0, 0, 1);
 					float hs = Tune.getF("view.altSharpSize") / 30f, ox = Tune.getF("view.altSharpX") / 15f, oy = Tune.getF("view.altSharpY") / 15f;
 					float mxs = Tune.on("view.canvasMirror") ? -1 : 1;
-					VertexConsumer bg = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/meter_7.png")));
+					VertexConsumer bg = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/meter_7.png")));
 					rect(bg, pm, mb, mxs * ox - hs, oy - hs, mxs * ox + hs, oy + hs, 0.002f, 0.2075f, 0.042f, 0.042f, 1);
 					float fill = Math.max(0, Math.min(1, w.rev2charge / 300f));
 					boolean full = fill >= 1;
-					VertexConsumer tv = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(new Identifier(UltraCraft.MOD_ID, "textures/uk/targetsquare.png")));
+					VertexConsumer tv = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(UltraCraft.MOD_ID, "textures/uk/targetsquare.png")));
 					squareFill(tv, pm, mb, ox, -oy, hs, 0.003f, fill, full ? vr : 0.5f, full ? vg : 0.5f, full ? vb : 0.5f, 1);
 				} else if (mb != null && variation == 2) {
 					// Sharpshooter: Background 1-3 (3.75x11, anchored bottom-right with a right/bottom pivot at x -1 / -5.625 /
@@ -1640,7 +1638,7 @@ public final class GunDisplays {
 					Matrix4f tb = gun.boneWorld("Armature/Upper Arm/Forearm/Hand/Revolver_Bone");
 					if (ta > 0.003f && tb != null && !alt) {
 						float hs = 0.16f * 0.381f * (float) Tune.get("view.twirlSize");
-						VertexConsumer tv = buffers.getBuffer(RenderLayer.getEntityTranslucentEmissive(new Identifier(UltraCraft.MOD_ID, "textures/uk/splash_2.png")));
+						VertexConsumer tv = buffers.getBuffer(RenderLayer.getEntityTranslucentEmissive(Identifier.of(UltraCraft.MOD_ID, "textures/uk/splash_2.png")));
 						vtx(tv, pm, pt(tb, -hs, -hs, 0), 0, 1, 1, 1, 1, ta);
 						vtx(tv, pm, pt(tb, hs, -hs, 0), 1, 1, 1, 1, 1, ta);
 						vtx(tv, pm, pt(tb, hs, hs, 0), 1, 0, 1, 1, 1, ta);
@@ -1650,7 +1648,7 @@ public final class GunDisplays {
 						// lies across the bone's y / z, the plane it spins in about x), scale 0.5
 						float hs = 0.16f * 0.5f * (float) Tune.get("view.twirlSize");
 						float oy = -0.0079f, oz = -0.0068f;
-						VertexConsumer tv = buffers.getBuffer(RenderLayer.getEntityTranslucentEmissive(new Identifier(UltraCraft.MOD_ID, "textures/uk/splash_2.png")));
+						VertexConsumer tv = buffers.getBuffer(RenderLayer.getEntityTranslucentEmissive(Identifier.of(UltraCraft.MOD_ID, "textures/uk/splash_2.png")));
 						vtx(tv, pm, pt(tb, 0, oy - hs, oz - hs), 0, 1, 1, 1, 1, ta);
 						vtx(tv, pm, pt(tb, 0, oy - hs, oz + hs), 1, 1, 1, 1, 1, ta);
 						vtx(tv, pm, pt(tb, 0, oy + hs, oz + hs), 1, 0, 1, 1, 1, ta);
@@ -2066,6 +2064,7 @@ public final class GunDisplays {
 
 	private static final java.util.List<Puff> puffs = new java.util.ArrayList<>();
 	private static long puffNanos;
+	private static final float CORE_STEAM_SCREEN_RIGHT = 0.5f;
 
 	/**
 	 * Shotgun.ReleaseHeat: the Smoke2 particle systems under Shell L / Shell R (cone 25 deg along their z, speed 2..5,
@@ -2083,7 +2082,7 @@ public final class GunDisplays {
 			Vector4f p4 = pt(b, ventAt[side][0], ventAt[side][1], ventAt[side][2]);
 			Vector3f dir = b.transformDirection(new Vector3f(0, 0, 1)).normalize();
 			float mx = OffhandGun.running() ? -1 : 1; // the off-hand gun is drawn mirrored
-			SteamFx.trail(HandRenderer.viewToWorld(new Vector3f(mx * p4.x, p4.y, p4.z)), HandRenderer.viewDirToWorld(dir.mul(mx, 1, 1)), n);
+			SteamFx.trail(HandRenderer.viewToWorld(new Vector3f(mx * p4.x + CORE_STEAM_SCREEN_RIGHT, p4.y, p4.z)), HandRenderer.viewDirToWorld(dir.mul(mx, 1, 1)), n);
 		}
 	}
 
@@ -2151,7 +2150,7 @@ public final class GunDisplays {
 
 	/** A camera-facing textured quad at a point of the view space. */
 	private static void billboardAt(VertexConsumerProvider buffers, Matrix4f pm, Vector4f c, String sprite, float size, float r, float g, float b, float a, boolean emissive) {
-		Identifier id = new Identifier(UltraCraft.MOD_ID, "textures/uk/" + sprite + ".png");
+		Identifier id = Identifier.of(UltraCraft.MOD_ID, "textures/uk/" + sprite + ".png");
 		VertexConsumer vc = buffers.getBuffer(emissive ? RenderLayer.getEntityTranslucentEmissive(id) : RenderLayer.getEntityTranslucent(id));
 		float h = size / 2;
 		Vector4f[] q = {new Vector4f(c.x - h, c.y - h, c.z, 1), new Vector4f(c.x + h, c.y - h, c.z, 1), new Vector4f(c.x + h, c.y + h, c.z, 1), new Vector4f(c.x - h, c.y + h, c.z, 1)};
@@ -2226,7 +2225,7 @@ public final class GunDisplays {
 		// the world-to-view turn GameRenderer.renderWorld applies: pitch about x, then yaw + 180 about y
 		org.joml.Quaternionf toView = new org.joml.Quaternionf().rotationX((float) Math.toRadians(cam.getPitch())).rotateY((float) Math.toRadians(cam.getYaw() + 180));
 		float blocksPerUnit = pm.getScale(new Vector3f()).x;
-		VertexConsumer vc = buffers.getBuffer(com.ultracraft.client.render.UkLayers.solidSmooth(new Identifier(UltraCraft.MOD_ID, "textures/uk/blooddrop.png")));
+		VertexConsumer vc = buffers.getBuffer(com.ultracraft.client.render.UkLayers.solidSmooth(Identifier.of(UltraCraft.MOD_ID, "textures/uk/blooddrop.png")));
 		float r = (float) Tune.get("spray.dripR"), g = (float) Tune.get("spray.dripG"), b = (float) Tune.get("spray.dripB");
 		Vector3f o = null, ax = null, ay = null, az = null;
 		if (sp != null) {
@@ -2275,7 +2274,7 @@ public final class GunDisplays {
 
 	/** A vertex already in the hand pass's view space (blocks). */
 	private static void free(VertexConsumer vc, Matrix4f m, float x, float y, float z, float u, float v, float r, float g, float b, float a) {
-		vc.vertex(m, x, y, z).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, 1).next();
+		vc.vertex(m, x, y, z).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, 1);
 	}
 
 	private static float sprayFlashScale, sprayFlashAngle;
@@ -2302,7 +2301,7 @@ public final class GunDisplays {
 
 	/** billboard() turned `angle` radians counterclockwise on the screen, alpha-blended (a Sprites-Default sprite). */
 	private static void spinBillboard(VertexConsumerProvider buffers, Matrix4f pm, Matrix4f bone, String sprite, float size, float angle, float r, float g, float b, float a, boolean add) {
-		Identifier id = new Identifier(UltraCraft.MOD_ID, "textures/uk/" + sprite + ".png");
+		Identifier id = Identifier.of(UltraCraft.MOD_ID, "textures/uk/" + sprite + ".png");
 		VertexConsumer vc = buffers.getBuffer(add ? com.ultracraft.client.render.UkLayers.glowSmooth(id) : com.ultracraft.client.render.UkLayers.solidSmooth(id));
 		Vector4f c = new Vector4f(0, 0, 0, 1).mul(bone);
 		float h = size / 2, cs = (float) Math.cos(angle) * h, sn = (float) Math.sin(angle) * h;
@@ -2314,7 +2313,7 @@ public final class GunDisplays {
 
 	/** A camera-facing textured quad centred on a bone's origin (view space: x right, y up, the rig's z is mirrored). */
 	private static void billboard(VertexConsumerProvider buffers, Matrix4f pm, Matrix4f bone, String sprite, float size, float r, float g, float b, float a) {
-		Identifier id = new Identifier(UltraCraft.MOD_ID, "textures/uk/" + sprite + ".png");
+		Identifier id = Identifier.of(UltraCraft.MOD_ID, "textures/uk/" + sprite + ".png");
 		// view.flashLayer 1: solid (cutout, full bright) so shader packs do not wash the yellow out; 0: see-through
 		VertexConsumer vc = buffers.getBuffer(Tune.on("view.flashLayer") && sprite.startsWith("muzzleflash") ? RenderLayer.getEntityCutoutNoCull(id) : RenderLayer.getEntityTranslucentEmissive(id));
 		Vector4f c = new Vector4f(0, 0, 0, 1).mul(bone);
@@ -2355,11 +2354,12 @@ public final class GunDisplays {
 	/** A VertexConsumer that moves every position through `place` (text px → the view) and passes the rest on. */
 	/** The draw's buffers with every vertex moved by the gun rig's underwater wobble (RigInstance.emit's wave). */
 	private static final class WobbleBuffers extends VertexConsumerProvider.Immediate {
+		private static final net.minecraft.client.util.BufferAllocator DUMMY_ALLOCATOR = new net.minecraft.client.util.BufferAllocator(256);
 		private final VertexConsumerProvider.Immediate base;
 		private final RigInstance gun;
 
 		WobbleBuffers(VertexConsumerProvider.Immediate base, RigInstance gun) {
-			super(new net.minecraft.client.render.BufferBuilder(256), java.util.Map.of());
+			super(DUMMY_ALLOCATOR, new java.util.LinkedHashMap<>());
 			this.base = base;
 			this.gun = gun;
 		}
@@ -2386,15 +2386,12 @@ public final class GunDisplays {
 			this.place = place;
 		}
 
-		@Override public VertexConsumer vertex(double x, double y, double z) { Vector3f p = place.apply(new Vector3f((float) x, (float) y, (float) z)); d.vertex(p.x, p.y, p.z); return this; }
+		@Override public VertexConsumer vertex(float x, float y, float z) { Vector3f p = place.apply(new Vector3f(x, y, z)); d.vertex(p.x, p.y, p.z); return this; }
 		@Override public VertexConsumer color(int r, int g, int b, int a) { d.color(r, g, b, a); return this; }
 		@Override public VertexConsumer texture(float u, float v) { d.texture(u, v); return this; }
 		@Override public VertexConsumer overlay(int u, int v) { d.overlay(u, v); return this; }
 		@Override public VertexConsumer light(int u, int v) { d.light(u, v); return this; }
 		@Override public VertexConsumer normal(float x, float y, float z) { d.normal(x, y, z); return this; }
-		@Override public void next() { d.next(); }
-		@Override public void fixedColor(int r, int g, int b, int a) { d.fixedColor(r, g, b, a); }
-		@Override public void unfixColor() { d.unfixColor(); }
 	}
 
 	private static Vector4f pt(Matrix4f bone, float x, float y, float z) {
@@ -2402,6 +2399,6 @@ public final class GunDisplays {
 	}
 
 	private static void vtx(VertexConsumer vc, Matrix4f pm, Vector4f p, float u, float v, float r, float g, float b, float a) {
-		vc.vertex(pm, p.x, p.y, -p.z).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, 1).next();
+		vc.vertex(pm, p.x, p.y, -p.z).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, 1);
 	}
 }

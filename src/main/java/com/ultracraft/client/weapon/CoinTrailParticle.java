@@ -44,21 +44,16 @@ public final class CoinTrailParticle extends Particle {
 	}
 
 	@Override
-	public boolean shouldCull() {
-		return false;
-	}
-
-	@Override
 	public void buildGeometry(VertexConsumer vc, Camera camera, float tickDelta) {
 		if (white == null) {
 			// the particle atlas lives in the texture manager (the model manager does not hold it)
 			SpriteAtlasTexture atlas = (SpriteAtlasTexture) MinecraftClient.getInstance().getTextureManager().getTexture(SpriteAtlasTexture.PARTICLE_ATLAS_TEXTURE);
-			white = atlas.getSprite(new Identifier("minecraft", "flash"));
+			white = atlas.getSprite(Identifier.of("minecraft", "flash"));
 		}
 		float u = (white.getMinU() + white.getMaxU()) / 2, v = (white.getMinV() + white.getMaxV()) / 2;
 		Vec3d cam = camera.getPos();
 		CoinRenderer.trailGeometry(coin, tickDelta, cam, (wx, wy, wz, a) ->
-			vc.vertex((float) (wx - cam.x), (float) (wy - cam.y), (float) (wz - cam.z)).texture(u, v).color(1f, 1f, 1f, a).light(0xF000F0).next());
+			vc.vertex((float) (wx - cam.x), (float) (wy - cam.y), (float) (wz - cam.z)).texture(u, v).color(1f, 1f, 1f, a).light(0xF000F0));
 	}
 
 	@Override

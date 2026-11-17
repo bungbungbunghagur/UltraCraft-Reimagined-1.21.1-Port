@@ -28,7 +28,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -466,7 +466,7 @@ public final class WhiplashClient {
 		caught.prevY = caught.lastRenderY = old.y;
 		caught.prevZ = caught.lastRenderZ = old.z;
 		ownPullPosition = false;
-		caught.updateTrackedPositionAndAngles(next.x, next.y, next.z, caught.getYaw(), caught.getPitch(), 1, false);
+		caught.updateTrackedPositionAndAngles(next.x, next.y, next.z, caught.getYaw(), caught.getPitch(), 1);
 		ownPullPosition = true;
 		ownPulled();
 		Net.toServer(new FirePayload(FirePayload.HOOK, 5, caught.getId(), next, to));
@@ -489,7 +489,7 @@ public final class WhiplashClient {
 		Vec3d next = heldMob.getPos().add(adj);
 		heldMob.setPosition(next);
 		bypass = true;
-		heldMob.updateTrackedPositionAndAngles(next.x, next.y, next.z, heldMob.getYaw(), heldMob.getPitch(), 1, false);
+		heldMob.updateTrackedPositionAndAngles(next.x, next.y, next.z, heldMob.getYaw(), heldMob.getPitch(), 1);
 		bypass = false;
 	}
 
@@ -558,7 +558,7 @@ public final class WhiplashClient {
 
 	// ------------------------------------------------------------------ rope + hook in the world
 
-	private static final net.minecraft.util.Identifier WIRE = new net.minecraft.util.Identifier("ultracraft", "textures/uk/whiplashwire.png");
+	private static final net.minecraft.util.Identifier WIRE = net.minecraft.util.Identifier.of("ultracraft", "textures/uk/whiplashwire.png");
 
 	/** View-space (Unity) point of a rig bone → world, through the camera. */
 	private static Vec3d viewToWorld(Camera cam, Vector3f unityPos) {
@@ -667,9 +667,9 @@ public final class WhiplashClient {
 	}
 
 	private static void quad(VertexConsumer vc, Matrix4f m, Vec3d a, Vec3d b, Vec3d c, Vec3d d, float u0, float u1) {
-		vc.vertex(m, (float) a.x, (float) a.y, (float) a.z).color(255, 255, 255, 255).texture(u0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, (float) b.x, (float) b.y, (float) b.z).color(255, 255, 255, 255).texture(u0, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, (float) c.x, (float) c.y, (float) c.z).color(255, 255, 255, 255).texture(u1, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, (float) d.x, (float) d.y, (float) d.z).color(255, 255, 255, 255).texture(u1, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) a.x, (float) a.y, (float) a.z).color(255, 255, 255, 255).texture(u0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, (float) b.x, (float) b.y, (float) b.z).color(255, 255, 255, 255).texture(u0, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, (float) c.x, (float) c.y, (float) c.z).color(255, 255, 255, 255).texture(u1, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, (float) d.x, (float) d.y, (float) d.z).color(255, 255, 255, 255).texture(u1, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

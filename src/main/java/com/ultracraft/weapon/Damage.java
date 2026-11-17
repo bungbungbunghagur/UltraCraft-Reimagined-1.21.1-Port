@@ -219,7 +219,7 @@ public final class Damage {
 		return best;
 	}
 
-	private static final RegistryKey<DamageType> ULTRAKILL = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("ultracraft", "ultrakill"));
+	private static final RegistryKey<DamageType> ULTRAKILL = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of("ultracraft", "ultrakill"));
 
 	/** The player's hit as the ultrakill damage type (Minecraft's armour formula skipped; enchantments still count). */
 	private static DamageSource source(ServerPlayerEntity shooter) {

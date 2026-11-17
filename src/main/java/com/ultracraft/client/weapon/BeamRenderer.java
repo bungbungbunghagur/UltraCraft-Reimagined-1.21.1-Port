@@ -11,7 +11,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -87,7 +87,6 @@ public final class BeamRenderer {
 		Vec3d camPos = cam.getPos();
 		MatrixStack ms = e.getPoseStack();
 		VertexConsumerProvider.Immediate buffers = c.getBufferBuilders().getEntityVertexConsumers();
-		VertexConsumer vc = buffers.getBuffer(com.ultracraft.client.render.UkLayers.emissiveDepth(WHITE));
 		ms.push();
 		ms.translate(-camPos.x, -camPos.y, -camPos.z);
 		Matrix4f m = ms.peek().getPositionMatrix();
@@ -96,6 +95,7 @@ public final class BeamRenderer {
 			// the LineRenderer shrinks 1.5 u/s in the game; beam.shrink lets it stay a little longer
 			if (!Tune.on("debug.beamHold")) b.width -= dt * (float) (b.rail() ? Tune.get("rail.beamShrink") : Tune.get("beam.shrink"));
 			if (b.width <= 0) { it.remove(); continue; }
+			VertexConsumer vc = buffers.getBuffer(com.ultracraft.client.render.UkLayers.emissiveDepth(WHITE));
 			double w = b.width * V1.SCALE * Tune.get("beam.width") * 0.5;
 			Vec3d dir = b.end.subtract(b.start);
 			double len = dir.length();
@@ -141,7 +141,7 @@ public final class BeamRenderer {
 			b.arcColor = (float) Math.random();
 		}
 		float cr = 1f - b.arcColor, cg = 1f - b.arcColor * (1f - 0.835f), cb = 1f;
-		VertexConsumer arcs = buffers.getBuffer(com.ultracraft.client.render.UkLayers.glowDepth(new net.minecraft.util.Identifier("ultracraft", "textures/uk/electricarcs" + b.arcFrame + ".png")));
+		VertexConsumer arcs = buffers.getBuffer(com.ultracraft.client.render.UkLayers.glowDepth(net.minecraft.util.Identifier.of("ultracraft", "textures/uk/electricarcs" + b.arcFrame + ".png")));
 		float tiles = (float) (len / V1.SCALE / Math.max(0.05, Tune.get("rail.beamArcTile")));
 		strip(arcs, m, b.start, b.end, side.multiply(w * Tune.get("rail.beamArcs")), 0f, tiles, cr, cg, cb, cr, cg, cb);
 	}
@@ -160,10 +160,10 @@ public final class BeamRenderer {
 
 	private static void tv(VertexConsumer vc, Matrix4f m, Vec3d p, float u, float v, float r, float g, float b) {
 		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, 1f).texture(u, v)
-			.overlay(net.minecraft.client.render.OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+			.overlay(net.minecraft.client.render.OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 
-	private static final net.minecraft.util.Identifier GLOWLINE = new net.minecraft.util.Identifier("ultracraft", "textures/uk/lineglow16.png");
+	private static final net.minecraft.util.Identifier GLOWLINE = net.minecraft.util.Identifier.of("ultracraft", "textures/uk/lineglow16.png");
 	private static final float[] MAL_END = {1f, 0.631f, 0f};
 
 	private static void ribbon(VertexConsumer vc, Matrix4f m, Beam b, Vec3d side) {
@@ -186,10 +186,10 @@ public final class BeamRenderer {
 		v(vc, m, d, er, eg, eb, alpha);
 	}
 
-	private static final net.minecraft.util.Identifier WHITE = new net.minecraft.util.Identifier("minecraft", "textures/misc/white.png");
+	private static final net.minecraft.util.Identifier WHITE = net.minecraft.util.Identifier.of("minecraft", "textures/misc/white.png");
 
 	private static void v(VertexConsumer vc, Matrix4f m, Vec3d p, float r, float g, float b, float a) {
 		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, a).texture(0.5f, 0.5f)
-			.overlay(net.minecraft.client.render.OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+			.overlay(net.minecraft.client.render.OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

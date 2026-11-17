@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntityRenderer.class)
 abstract class LivingEntityRendererMixin {
 	private static final String RENDER = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V";
-	private static final String MODEL = "Lnet/minecraft/client/render/entity/model/EntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V";
+	private static final String MODEL = "Lnet/minecraft/client/render/entity/model/EntityModel;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;III)V";
 
 	@Inject(method = RENDER, at = @At("HEAD"))
 	private void ultracraft$begin(LivingEntity e, float yaw, float tickDelta, MatrixStack ms, VertexConsumerProvider buffers, int light, CallbackInfo ci) {
@@ -28,17 +28,10 @@ abstract class LivingEntityRendererMixin {
 	}
 
 	@ModifyArg(method = RENDER, at = @At(value = "INVOKE", target = MODEL), index = 4)
-	private float ultracraft$red(float r) {
-		return r * GasolineClient.oilTint(0);
-	}
-
-	@ModifyArg(method = RENDER, at = @At(value = "INVOKE", target = MODEL), index = 5)
-	private float ultracraft$green(float g) {
-		return g * GasolineClient.oilTint(1);
-	}
-
-	@ModifyArg(method = RENDER, at = @At(value = "INVOKE", target = MODEL), index = 6)
-	private float ultracraft$blue(float b) {
-		return b * GasolineClient.oilTint(2);
+	private int ultracraft$oilTint(int color) {
+		int red = Math.round(((color >>> 16) & 0xFF) * GasolineClient.oilTint(0));
+		int green = Math.round(((color >>> 8) & 0xFF) * GasolineClient.oilTint(1));
+		int blue = Math.round((color & 0xFF) * GasolineClient.oilTint(2));
+		return (color & 0xFF000000) | (red << 16) | (green << 8) | blue;
 	}
 }

@@ -243,28 +243,28 @@ public class UKProjectileEntity extends Entity {
 	}
 
 	@Override
-	protected void initDataTracker() {
-		dataTracker.startTracking(KIND, 0);
-		dataTracker.startTracking(STUCK, false);
-		dataTracker.startTracking(FROZEN, false);
-		dataTracker.startTracking(LEVELLED, false);
-		dataTracker.startTracking(STUCK_IN, -1);
-		dataTracker.startTracking(BOOSTED, false);
-		dataTracker.startTracking(OWNER_ID, -1);
-		dataTracker.startTracking(MAGNETIZED, false);
-		dataTracker.startTracking(FUSE_AT, -1L);
-		dataTracker.startTracking(MAG_TARGET, -1);
-		dataTracker.startTracking(MAG_VEL, new org.joml.Vector3f());
-		dataTracker.startTracking(MAG_LOAD, 0f);
-		dataTracker.startTracking(MAG_ANGLE, 85f);
-		dataTracker.startTracking(SAW_SPIN, 0);
-		dataTracker.startTracking(SAW_DIR, new org.joml.Vector3f());
-		dataTracker.startTracking(SAW_PHASE, 0f);
-		dataTracker.startTracking(SAW_TICK, 0);
-		dataTracker.startTracking(SAW_POS, new org.joml.Vector3f());
-		dataTracker.startTracking(MAG_C, new org.joml.Vector3f());
-		dataTracker.startTracking(SAW_VAR, -1);
-		dataTracker.startTracking(OFF_HAND, false);
+	protected void initDataTracker(DataTracker.Builder builder) {
+		builder.add(KIND, 0);
+		builder.add(STUCK, false);
+		builder.add(FROZEN, false);
+		builder.add(LEVELLED, false);
+		builder.add(STUCK_IN, -1);
+		builder.add(BOOSTED, false);
+		builder.add(OWNER_ID, -1);
+		builder.add(MAGNETIZED, false);
+		builder.add(FUSE_AT, -1L);
+		builder.add(MAG_TARGET, -1);
+		builder.add(MAG_VEL, new org.joml.Vector3f());
+		builder.add(MAG_LOAD, 0f);
+		builder.add(MAG_ANGLE, 85f);
+		builder.add(SAW_SPIN, 0);
+		builder.add(SAW_DIR, new org.joml.Vector3f());
+		builder.add(SAW_PHASE, 0f);
+		builder.add(SAW_TICK, 0);
+		builder.add(SAW_POS, new org.joml.Vector3f());
+		builder.add(MAG_C, new org.joml.Vector3f());
+		builder.add(SAW_VAR, -1);
+		builder.add(OFF_HAND, false);
 	}
 
 	public ProjectileKind kind() {

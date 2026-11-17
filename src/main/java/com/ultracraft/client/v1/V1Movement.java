@@ -121,7 +121,9 @@ public final class V1Movement {
 		// collisions set; standing in a portal, V1 sets it every tick itself (the effect did not play)
 		net.minecraft.util.math.BlockPos portalAt = netherPortalAt(p);
 		if (portalAt != null) {
-			p.setInNetherPortal(portalAt);
+			if (p.portalManager == null) p.portalManager = new net.minecraft.world.dimension.PortalManager((net.minecraft.block.NetherPortalBlock) net.minecraft.block.Blocks.NETHER_PORTAL, portalAt);
+			else p.portalManager.setPortalPos(portalAt);
+			p.portalManager.setInPortal(true);
 			if (Tune.on("debug.weapons") && p.age % 10 == 0) com.ultracraft.UltraCraft.LOG.info("[portal] in portal at {}: nausea {} -> {}", portalAt, p.prevNauseaIntensity, p.nauseaIntensity);
 		}
 		MinecraftClient client = MinecraftClient.getInstance();
@@ -601,7 +603,7 @@ public final class V1Movement {
 			Vec3d fwd = new Vec3d(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
 			Vec3d right = fwd.crossProduct(new Vec3d(0, 1, 0));
 			Vec3d up = right.lengthSquared() < 1e-6 ? new Vec3d(0, 0, 1) : right.normalize().crossProduct(fwd);
-			Vec3d centre = r.getPos().add(0, r.getBoundingBox().getYLength() * 0.5, 0);
+			Vec3d centre = r.getPos().add(0, r.getBoundingBox().getLengthY() * 0.5, 0);
 			Vec3d top = centre.add(up.multiply(2 * V1.SCALE)).add(fwd.multiply(V1.SCALE)).subtract(0, 0.9, 0);
 			// (the first tick on it: V1 lands there at once - its in-between-frames place still ran from where it jumped,
 			// and the rocket, drawn from that place, flashed off to the side for a moment)

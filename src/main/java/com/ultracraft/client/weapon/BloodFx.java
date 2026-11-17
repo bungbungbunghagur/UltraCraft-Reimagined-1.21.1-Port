@@ -15,7 +15,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ import java.util.Random;
  * `blooddrop` sprite; a drop that hits a surface leaves a flat stain that fades after a while.
  */
 public final class BloodFx {
-	private static final Identifier DROP = new Identifier(UltraCraft.MOD_ID, "textures/uk/blooddrop.png");
+	private static final Identifier DROP = Identifier.of(UltraCraft.MOD_ID, "textures/uk/blooddrop.png");
 	private static final double COUNT = Tune.def("fx.bloodDrops", 70, "blood drops per hit (BS Body Small emits a 25° cone burst; x5 the old 14 by the user)");
 	private static final double SPEED = Tune.def("fx.bloodSpeed", 9, "blood drop start speed, u/s");
 	private static final double SIZE = Tune.def("fx.bloodSize", 0.22, "blood drop quad size, u");
@@ -166,6 +166,6 @@ public final class BloodFx {
 	}
 
 	private static void v(VertexConsumer vc, Matrix4f m, double x, double y, double z, float u, float w, float a) {
-		vc.vertex(m, (float) x, (float) y, (float) z).color(0.55f, 0f, 0f, a).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) x, (float) y, (float) z).color(0.55f, 0f, 0f, a).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

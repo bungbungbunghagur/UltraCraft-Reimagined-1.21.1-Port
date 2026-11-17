@@ -15,7 +15,7 @@ import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -100,10 +100,8 @@ public final class ExplosionFx {
 	 */
 	public static void onRenderLevel(RenderLevelStageEvent e) {
 		boolean early = e.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES;
-		// (without a shader pack the late draw comes after the weather, not writing depth: vanilla draws its clouds after
-		// the particles, and the fading sphere's depth hid every cloud behind it until it was gone)
 		boolean shaders = com.ultracraft.client.render.UkLayers.shadersOn();
-		RenderLevelStageEvent.Stage late = shaders ? RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS : RenderLevelStageEvent.Stage.AFTER_WEATHER;
+		RenderLevelStageEvent.Stage late = shaders ? RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS : RenderLevelStageEvent.Stage.AFTER_PARTICLES;
 		if ((!early && e.getStage() != late) || list.isEmpty() || !Tune.on("fx.explosions")) return;
 		// (no shadow: the game's explosions are see-through and cast none - in a shader pack's shadow pass the sphere
 		// cast a solid one that stayed while it faded and went all at once)
@@ -127,7 +125,7 @@ public final class ExplosionFx {
 		MinecraftClient c = MinecraftClient.getInstance();
 		Camera cam = e.getCamera();
 		Vec3d camPos = cam.getPos();
-		MatrixStack ms = com.ultracraft.client.render.UkLayers.worldStack(e);
+		MatrixStack ms = shaders ? com.ultracraft.client.render.UkLayers.worldStack(e) : e.getPoseStack();
 		VertexConsumerProvider.Immediate buffers = c.getBufferBuilders().getEntityVertexConsumers();
 		for (Iterator<Fx> it = list.iterator(); it.hasNext(); ) {
 			Fx f = it.next();

@@ -7,7 +7,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.text.Text;
-import net.minecraftforge.client.event.ContainerScreenEvent;
+import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 
 /**
  * The player's P (the user's ask): at the top of the black box V1 stands in, in the inventory and on the creative

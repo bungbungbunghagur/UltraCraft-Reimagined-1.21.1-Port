@@ -12,7 +12,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import java.util.Random;
  * plays "Ricochet" at volume 0.1.
  */
 public final class SparkFx {
-	private static final Identifier SPRITE = new Identifier(UltraCraft.MOD_ID, "textures/uk/spark.png");
+	private static final Identifier SPRITE = Identifier.of(UltraCraft.MOD_ID, "textures/uk/spark.png");
 
 	private static final class Spark {
 		Vec3d pos, vel;
@@ -106,6 +106,6 @@ public final class SparkFx {
 	}
 
 	private static void v(VertexConsumer vc, Matrix4f m, double x, double y, double z, float u, float w, float r, float g, float b, float a) {
-		vc.vertex(m, (float) x, (float) y, (float) z).color(r, g, b, a).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) x, (float) y, (float) z).color(r, g, b, a).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

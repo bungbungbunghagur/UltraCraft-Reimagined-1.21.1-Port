@@ -6,9 +6,9 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.TickEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public final class DebugCommands {
 	private DebugCommands() {}
 
 	public static void init() {
-		MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> e.getDispatcher().register(CommandManager.literal("ukdebug")
+		NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> e.getDispatcher().register(CommandManager.literal("ukdebug")
 			.requires(src -> src.hasPermissionLevel(2))
 			.then(CommandManager.literal("cannonball")
 				.executes(c -> cannonball(c.getSource().getPlayerOrThrow(), 100))
@@ -39,8 +39,7 @@ public final class DebugCommands {
 				.executes(c -> sawRing(c.getSource().getPlayerOrThrow(), 6))
 				.then(CommandManager.argument("saws", IntegerArgumentType.integer(1, 15))
 					.executes(c -> sawRing(c.getSource().getPlayerOrThrow(), IntegerArgumentType.getInteger(c, "saws")))))));
-		MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
-			if (e.phase != TickEvent.Phase.END) return;
+		NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> {
 			for (Later l : new ArrayList<>(later)) if (--l.ticks[0] <= 0) { later.remove(l); l.run.run(); }
 		});
 	}

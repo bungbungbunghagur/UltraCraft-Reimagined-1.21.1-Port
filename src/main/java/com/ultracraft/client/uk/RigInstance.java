@@ -463,7 +463,7 @@ public final class RigInstance {
 				String tex = meshTexture.containsKey(mi) ? meshTexture.get(mi)
 					: sub.material() != null && materialTexture.containsKey(sub.material()) ? materialTexture.get(sub.material())
 					: sub.texture() != null ? sub.texture() : m.texture;
-				Identifier id = tex != null ? new Identifier(texturePath.getNamespace(), texturePath.getPath() + tex + ".png") : new Identifier("minecraft", "textures/misc/white.png");
+				Identifier id = tex != null ? Identifier.of(texturePath.getNamespace(), texturePath.getPath() + tex + ".png") : Identifier.of("minecraft", "textures/misc/white.png");
 				Float ma = meshAlpha.get(mi);
 				float[] sc = sub.material() != null ? materialColor.get(sub.material()) : null;
 				if (sc != null && sc[3] <= 0.004f) continue;
@@ -526,7 +526,7 @@ public final class RigInstance {
 				}
 				Object[] so = subEmissive.get(((long) mi << 32) | subIdx);
 				if (so != null) {
-					Identifier soId = new Identifier(texturePath.getNamespace(), texturePath.getPath() + so[0] + ".png");
+					Identifier soId = Identifier.of(texturePath.getNamespace(), texturePath.getPath() + so[0] + ".png");
 					VertexConsumer ev = buffers.getBuffer(so.length > 2 && Boolean.TRUE.equals(so[2]) ? com.ultracraft.client.render.UkLayers.glowDepth(soId) : RenderLayer.getEntityTranslucentEmissive(soId));
 					subColor = (float[]) so[1];
 					for (int t = sub.first(); t + 2 < end; t += 3) {
@@ -539,7 +539,7 @@ public final class RigInstance {
 			String eo = layerOverride != null ? null : emissiveOverlay.get(mi);
 			if (eo != null) {
 				float[] ec = emissiveColor.get(mi);
-				Identifier eid = new Identifier(texturePath.getNamespace(), texturePath.getPath() + eo + ".png");
+				Identifier eid = Identifier.of(texturePath.getNamespace(), texturePath.getPath() + eo + ".png");
 				// (additive: added onto the mesh's own texture, like a heat glow; else laid over it)
 				VertexConsumer vc = buffers.getBuffer(emissiveAdditive.contains(mi) ? com.ultracraft.client.render.UkLayers.glowDepth(eid) : RenderLayer.getEntityTranslucentEmissive(eid));
 				subColor = ec;
@@ -628,7 +628,7 @@ public final class RigInstance {
 
 	/** Flat white added on top, 0..1 per unit (1 = solid white): the parry's blown-out look. */
 	public float whiteAdd;
-	private static final Identifier FLAT_WHITE = new Identifier("minecraft", "textures/misc/white.png");
+	private static final Identifier FLAT_WHITE = Identifier.of("minecraft", "textures/misc/white.png");
 	/** When set, every base pass uses this layer and the overlay passes are skipped (e.g. a depth-only redraw). */
 	public java.util.function.Function<Identifier, RenderLayer> layerOverride;
 	public float lightR = 1, lightG = 0.93f, lightB = 0.72f;
@@ -765,9 +765,11 @@ public final class RigInstance {
 			org.joml.Vector4f vp = new org.joml.Vector4f(x, y, z, 1).mul(pm);
 			vp.x += wobbleAmp * (float) Math.sin(wobbleTime * wobbleFreq + vp.y * wobbleWave);
 			vp.y += wobbleAmp * (float) Math.sin(wobbleTime * wobbleFreq * 1.3f + vp.x * wobbleWave);
-			vc.vertex(vp.x, vp.y, vp.z).color(r, g, b, a).texture(u, w).overlay(overlay).light(light).normal(nm, nx, ny, nz).next();
+			nm.transform(scratchN.set(nx, ny, nz)).normalize();
+			vc.vertex(vp.x, vp.y, vp.z).color(r, g, b, a).texture(u, w).overlay(overlay).light(light).normal(scratchN.x, scratchN.y, scratchN.z);
 			return;
 		}
-		vc.vertex(pm, x, y, z).color(r, g, b, a).texture(u, w).overlay(overlay).light(light).normal(nm, nx, ny, nz).next();
+		nm.transform(scratchN.set(nx, ny, nz)).normalize();
+		vc.vertex(pm, x, y, z).color(r, g, b, a).texture(u, w).overlay(overlay).light(light).normal(scratchN.x, scratchN.y, scratchN.z);
 	}
 }

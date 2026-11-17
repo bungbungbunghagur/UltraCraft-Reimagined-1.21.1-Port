@@ -16,7 +16,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -98,7 +98,7 @@ public final class V1Renderer {
 	 * /ukv1 normal|pumpkin|christmas|easter|date: V1 drawn without a hat, with one hat whatever the date, or back to
 	 * the date's hat. Client side, so it changes only how this game draws V1s.
 	 */
-	public static void registerCommands(net.minecraftforge.client.event.RegisterClientCommandsEvent e) {
+	public static void registerCommands(net.neoforged.neoforge.client.event.RegisterClientCommandsEvent e) {
 		var root = net.minecraft.server.command.CommandManager.literal("ukv1")
 			.then(net.minecraft.server.command.CommandManager.literal("normal").executes(c -> setHat(c.getSource(), "", "V1 without a hat")))
 			.then(net.minecraft.server.command.CommandManager.literal("date").executes(c -> setHat(c.getSource(), null, "V1's hat by the date again")));
@@ -234,7 +234,7 @@ public final class V1Renderer {
 	 * 0.25 lower. Drawn in the model's root space, so they size with the model.
 	 */
 	private static void drawSpinRings(MatrixStack ms, VertexConsumerProvider buffers, Matrix4f root) {
-		net.minecraft.client.render.VertexConsumer vc = buffers.getBuffer(net.minecraft.client.render.RenderLayer.getEntityTranslucentEmissive(new net.minecraft.util.Identifier(com.ultracraft.UltraCraft.MOD_ID, "textures/uk/rageeffectwhite.png")));
+		net.minecraft.client.render.VertexConsumer vc = buffers.getBuffer(net.minecraft.client.render.RenderLayer.getEntityTranslucentEmissive(net.minecraft.util.Identifier.of(com.ultracraft.UltraCraft.MOD_ID, "textures/uk/rageeffectwhite.png")));
 		float ang = (float) ((System.nanoTime() / 1e9 * 3600.0) % 360);
 		ms.push();
 		ms.multiplyPositionMatrix(root);
@@ -252,14 +252,14 @@ public final class V1Renderer {
 
 	private static void ring(net.minecraft.client.render.VertexConsumer vc, Matrix4f m, float h, float a) {
 		int al = (int) (a * 255);
-		vc.vertex(m, -h, 0, -h).color(255, 255, 255, al).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, -h, 0, h).color(255, 255, 255, al).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, h, 0, h).color(255, 255, 255, al).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, h, 0, -h).color(255, 255, 255, al).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
-		vc.vertex(m, h, 0, -h).color(255, 255, 255, al).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, -1, 0).next();
-		vc.vertex(m, h, 0, h).color(255, 255, 255, al).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, -1, 0).next();
-		vc.vertex(m, -h, 0, h).color(255, 255, 255, al).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, -1, 0).next();
-		vc.vertex(m, -h, 0, -h).color(255, 255, 255, al).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, -1, 0).next();
+		vc.vertex(m, -h, 0, -h).color(255, 255, 255, al).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, -h, 0, h).color(255, 255, 255, al).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, h, 0, h).color(255, 255, 255, al).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, h, 0, -h).color(255, 255, 255, al).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
+		vc.vertex(m, h, 0, -h).color(255, 255, 255, al).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, -1, 0);
+		vc.vertex(m, h, 0, h).color(255, 255, 255, al).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, -1, 0);
+		vc.vertex(m, -h, 0, h).color(255, 255, 255, al).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, -1, 0);
+		vc.vertex(m, -h, 0, -h).color(255, 255, 255, al).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, -1, 0);
 	}
 
 	/**
@@ -374,7 +374,7 @@ public final class V1Renderer {
 		// look pitch applied, first-person units scaled to model units (1 u = 1.8/3.5 blocks vs 1.8/3.84).
 		Vector3f hp = head.getTranslation(new Vector3f());
 		float k = (float) (Tune.get("tp.gunScale") * Damage.SCALE_BLOCKS / BASE_SCALE);
-		float td = MinecraftClient.getInstance().getTickDelta();
+		float td = MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false);
 		boolean gui = com.ultracraft.client.uk.ViewModel.stopsTime(MinecraftClient.getInstance().currentScreen);
 		float pitch = (float) Math.toRadians((gui ? p.getPitch() : MathHelper.lerp(td, p.prevPitch, p.getPitch())) * Tune.get("tp.aimPitch"));
 		Matrix4f m = new Matrix4f().translation(hp.x + (float) Tune.get("tp.gunX"), hp.y + (float) Tune.get("tp.gunY"), hp.z + (float) Tune.get("tp.gunZ"))
@@ -399,7 +399,7 @@ public final class V1Renderer {
 		float a = (float) Math.toRadians(Tune.get("tp.yaw") - yaw);
 		float cx = (float) Math.cos(a), sx = (float) Math.sin(a);
 		Vector3f r = new Vector3f(v.x * cx + v.z * sx, v.y, -v.x * sx + v.z * cx);
-		float td = MinecraftClient.getInstance().getTickDelta();
+		float td = MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false);
 		Vec3d base = new Vec3d(MathHelper.lerp(td, p.prevX, p.getX()), MathHelper.lerp(td, p.prevY, p.getY()), MathHelper.lerp(td, p.prevZ, p.getZ()));
 		lastHandL = base.add(r.x, r.y, r.z);
 		lastHandFrame = System.nanoTime();

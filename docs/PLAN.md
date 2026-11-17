@@ -1,6 +1,6 @@
 # UltraCraft — plan
 
-ULTRAKILL's V1 inside Minecraft Forge 1.20.1 as a **native port**: one game running, ULTRAKILL's real
+ULTRAKILL's V1 inside Minecraft NeoForge 1.21.1 as a **native port**: one game running, ULTRAKILL's real
 models/textures/sounds/animations converted from the player's own install, ULTRAKILL's real numbers
 (read from its code, see `ULTRAKILL_SOURCE.md`) re-implemented on Minecraft's entities and blocks.
 
@@ -22,7 +22,7 @@ models/textures/sounds/animations converted from the player's own install, ULTRA
 - Single player first; logic split client/server from day one so multiplayer is a later step.
 - No generative AI anywhere. No DLC assets. Game assets first, always.
 
-## Architecture (Forge 1.20.1, Loom)
+## Architecture (NeoForge 1.21.1, Loom, Java 21)
 ```
 com.ultracraft
   UltraCraft            mod entry, registries, network
@@ -84,7 +84,7 @@ The same scripts are what the installer runs (bundled Python like DishonoredCraf
    range, on-gun displays from the prefab canvases, vanilla sprint/sneak as dash/slide, blood, slam shockwave,
    rocket riding, chainsaw, the parry system (melee parry windows with the yellow flash, projectile parry over
    the active frames, pellet projectile boost), Core Eject heat + steam, Knuckleblaster shells, Coin.prefab
-   model, HUD bar heights + arm icons, the Forge config screen (speedometer, parry flash).
+   model, HUD bar heights + arm icons,    the NeoForge config screen (speedometer, parry flash).
 6. **Terminal shop + P**, recipes, unlock persistence.
 7. **Retro look options**, polish, settings screens.
 8. **Installer** (BYO files, CurseForge/Prism/MultiMC profiles, updater), GitHub repo (private → public
@@ -95,5 +95,5 @@ The same scripts are what the installer runs (bundled Python like DishonoredCraf
   headshot = hit within the top 25% of the bounding box (configurable), limb hits not modelled in 1.0.
 - Oculus + custom post-process: pixelation/palette must be a plain framebuffer pass; disable when
   Iris/Oculus shaders are on.
-- Skinned-mesh rendering in Forge: custom `EntityRenderer` doing CPU skinning (V1 is ~few k verts) is
+- Skinned-mesh rendering in NeoForge: custom `EntityRenderer` doing CPU skinning (V1 is ~few k verts) is
   the simplest robust route; GPU skinning later if needed.

@@ -23,7 +23,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -57,11 +57,11 @@ public final class ZapperClient {
 	public static final float MAX_DISTANCE = 20f;
 	/** ULTRAKILL's fixed step. */
 	private static final double STEP = 0.008;
-	private static final Identifier GRADIENT = new Identifier(UltraCraft.MOD_ID, "textures/uk/gradient.png");
-	private static final Identifier CHARGE = new Identifier(UltraCraft.MOD_ID, "textures/uk/charge.png");
-	private static final Identifier BODY = new Identifier(UltraCraft.MOD_ID, "textures/uk/floordecoration3.png");
-	private static final Identifier PRONGS = new Identifier(UltraCraft.MOD_ID, "textures/uk/floortiles2c.png");
-	private static final Identifier WHITE = new Identifier("minecraft", "textures/misc/white.png");
+	private static final Identifier GRADIENT = Identifier.of(UltraCraft.MOD_ID, "textures/uk/gradient.png");
+	private static final Identifier CHARGE = Identifier.of(UltraCraft.MOD_ID, "textures/uk/charge.png");
+	private static final Identifier BODY = Identifier.of(UltraCraft.MOD_ID, "textures/uk/floordecoration3.png");
+	private static final Identifier PRONGS = Identifier.of(UltraCraft.MOD_ID, "textures/uk/floortiles2c.png");
+	private static final Identifier WHITE = Identifier.of("minecraft", "textures/misc/white.png");
 
 	public enum State { NONE, FLYING, ATTACHED }
 
@@ -319,7 +319,7 @@ public final class ZapperClient {
 		MinecraftClient c = MinecraftClient.getInstance();
 		ClientPlayerEntity p = c.player;
 		if (p == null || c.world == null) return;
-		float td = e.getPartialTick();
+		float td = e.getPartialTick().getTickDelta(false);
 		Camera cam = e.getCamera();
 		Vec3d camPos = cam.getPos();
 		Vec3d start = lineStart(p, td);
@@ -418,6 +418,6 @@ public final class ZapperClient {
 	}
 
 	private static void vert(VertexConsumer vc, Matrix4f m, Vec3d p, float u, float v, float r, float g, float b, float a) {
-		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

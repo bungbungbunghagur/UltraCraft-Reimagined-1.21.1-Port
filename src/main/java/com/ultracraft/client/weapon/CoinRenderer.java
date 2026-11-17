@@ -40,8 +40,8 @@ public final class CoinRenderer extends EntityRenderer<CoinEntity> {
 	private static final double FLASH_SIZE = Tune.def("coin.flashSize", 1.35, "multiplier on the CoinFlash sprite (0.32 u sprite x 4; the game: 1)");
 	private static final double TRAIL_LAYER = Tune.def("coin.trailLayer", 1, "coin trail layer: 1 unlit + depth (bright, in front of shader clouds), 5 particle (lit by shaders: dimmer), 0 unlit, 2 additive, 3 lit translucent, 4 eyes");
 	private static final double TRAIL_STAGE = Tune.def("coin.trailStage", 0, "coin trail/flash pass: 0 after particles, 1 after translucent blocks, 2 after entities, 3 after weather");
-	private static final Identifier MUZZLE = new Identifier(com.ultracraft.UltraCraft.MOD_ID, "textures/uk/muzzleflash.png");
-	private static final Identifier WHITE_TEX = new Identifier("minecraft", "textures/misc/white.png");
+	private static final Identifier MUZZLE = Identifier.of(com.ultracraft.UltraCraft.MOD_ID, "textures/uk/muzzleflash.png");
+	private static final Identifier WHITE_TEX = Identifier.of("minecraft", "textures/misc/white.png");
 	private RigInstance rig;
 	private boolean rigTried, logged;
 
@@ -111,10 +111,10 @@ public final class CoinRenderer extends EntityRenderer<CoinEntity> {
 				float x0 = (float) Math.cos(side == 0 ? a0 : a1) * r, y0 = (float) Math.sin(side == 0 ? a0 : a1) * r;
 				float x1 = (float) Math.cos(side == 0 ? a1 : a0) * r, y1 = (float) Math.sin(side == 0 ? a1 : a0) * r;
 				float z = side == 0 ? 0.005f : -0.005f;
-				vc.vertex(m, 0, 0, z).color(1f, g, b, 1f).next();
-				vc.vertex(m, x0, y0, z).color(1f, g, b, 1f).next();
-				vc.vertex(m, x1, y1, z).color(1f, g, b, 1f).next();
-				vc.vertex(m, x1, y1, z).color(1f, g, b, 1f).next();
+				vc.vertex(m, 0, 0, z).color(1f, g, b, 1f);
+				vc.vertex(m, x0, y0, z).color(1f, g, b, 1f);
+				vc.vertex(m, x1, y1, z).color(1f, g, b, 1f);
+				vc.vertex(m, x1, y1, z).color(1f, g, b, 1f);
 			}
 		}
 		ms.pop();
@@ -130,16 +130,16 @@ public final class CoinRenderer extends EntityRenderer<CoinEntity> {
 	 * composite their clouds wherever the depth buffer still holds sky, so the old emissive, depth-less layer was
 	 * painted over by clouds. (AFTER_WEATHER is not shown under a shader pack.)
 	 */
-	public static void onRenderLevel(net.minecraftforge.client.event.RenderLevelStageEvent e) {
+	public static void onRenderLevel(net.neoforged.neoforge.client.event.RenderLevelStageEvent e) {
 		int st = (int) Tune.get("coin.trailStage");
-		var want = st == 1 ? net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS
-			: st == 2 ? net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES
-			: st == 3 ? net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_WEATHER
-			: net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
+		var want = st == 1 ? net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS
+			: st == 2 ? net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES
+			: st == 3 ? net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_WEATHER
+			: net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
 		if (e.getStage() != want) return;
 		var client = net.minecraft.client.MinecraftClient.getInstance();
 		if (client.world == null) return;
-		float td = e.getPartialTick();
+		float td = e.getPartialTick().getTickDelta(false);
 		net.minecraft.util.math.Vec3d cam = e.getCamera().getPos();
 		VertexConsumerProvider.Immediate buffers = client.getBufferBuilders().getEntityVertexConsumers();
 		MatrixStack ms = e.getPoseStack();
@@ -246,8 +246,8 @@ public final class CoinRenderer extends EntityRenderer<CoinEntity> {
 	}
 
 	private static void tv(VertexConsumer vc, Matrix4f m, net.minecraft.util.math.Vec3d p, float a) {
-		if (posColor) { vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(a, a, a, a).next(); return; }
-		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(1f, 1f, 1f, a).texture(0.5f, 0.5f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		if (posColor) { vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(a, a, a, a); return; }
+		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(1f, 1f, 1f, a).texture(0.5f, 0.5f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 
 	/**
@@ -305,12 +305,12 @@ public final class CoinRenderer extends EntityRenderer<CoinEntity> {
 	private static void fv(VertexConsumer vc, Matrix4f m, float x, float y, float u, float v, float a) {
 		// the spark in bright yellow (coin.flashR/G/B), so it reads yellow without a shader pack too
 		float r = flashTint ? (float) Tune.get("coin.flashR") : 1f, g = flashTint ? (float) Tune.get("coin.flashG") : 1f, b = flashTint ? (float) Tune.get("coin.flashB") : 1f;
-		if (posColor) { vc.vertex(m, x, y, 0).color(r * a, g * a, b * a, a).next(); return; }
-		vc.vertex(m, x, y, 0).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, 1).next();
+		if (posColor) { vc.vertex(m, x, y, 0).color(r * a, g * a, b * a, a); return; }
+		vc.vertex(m, x, y, 0).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, 1);
 	}
 
 	@Override
 	public Identifier getTexture(CoinEntity entity) {
-		return new Identifier("minecraft", "textures/misc/white.png");
+		return Identifier.of("minecraft", "textures/misc/white.png");
 	}
 }

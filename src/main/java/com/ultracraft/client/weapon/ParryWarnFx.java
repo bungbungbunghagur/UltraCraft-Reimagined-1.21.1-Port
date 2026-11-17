@@ -14,7 +14,7 @@ import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import java.util.List;
  * that shrinks away (parry.warnSize / parry.warnTime by eye).
  */
 public final class ParryWarnFx {
-	private static final Identifier STAR = new Identifier(UltraCraft.MOD_ID, "textures/uk/muzzleflash.png");
+	private static final Identifier STAR = Identifier.of(UltraCraft.MOD_ID, "textures/uk/muzzleflash.png");
 
 	static {
 		Tune.def("parry.warnSize", 1.2, "parry warning star size, blocks (by eye)");
@@ -79,7 +79,7 @@ public final class ParryWarnFx {
 			double t = (now - w.nanos) / 1e9 / life;
 			Entity en = c.world.getEntityById(w.id);
 			if (t >= 1 || en == null || !en.isAlive()) { it.remove(); continue; }
-			Vec3d at = headPos(en, w.head, e.getPartialTick());
+			Vec3d at = headPos(en, w.head, e.getPartialTick().getTickDelta(false));
 			// in front of the head toward the camera, so the head does not hide it
 			Vec3d toCam = camPos.subtract(at).normalize();
 			// (out past the body's side: a ghast is 4 wide, and the star sat inside it; but never more than halfway to the
@@ -108,6 +108,6 @@ public final class ParryWarnFx {
 
 	private static void v(VertexConsumer vc, Matrix4f m, Vec3d p, float u, float vv, float a) {
 		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(1f, 0.936f, 0.665f, a).texture(u, vv)
-			.overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+			.overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

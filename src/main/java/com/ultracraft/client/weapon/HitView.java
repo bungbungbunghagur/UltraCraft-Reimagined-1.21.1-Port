@@ -32,7 +32,7 @@ public final class HitView {
 	public static void claim(ClientPlayerEntity p, Vec3d origin, Vec3d dir, float radiusUnits) {
 		MinecraftClient c = MinecraftClient.getInstance();
 		if (c.world == null) return;
-		float td = c.getTickDelta();
+		float td = c.getRenderTickCounter().getTickDelta(false);
 		Vec3d d = dir.normalize();
 		Vec3d end = origin.add(d.multiply(Damage.rangeBlocks()));
 		BlockHitResult block = c.world.raycast(com.ultracraft.weapon.Plants.ctx(origin, end, p));

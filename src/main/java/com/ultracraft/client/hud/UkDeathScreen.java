@@ -46,11 +46,11 @@ import java.util.Random;
  * texts come from the player's own ULTRAKILL (uk/death.json, tools/extract/export_death.py).
  */
 public final class UkDeathScreen extends Screen {
-	private static final Identifier FONT = new Identifier(UltraCraft.MOD_ID, "vcr");
-	private static final Identifier CRT = new Identifier(UltraCraft.MOD_ID, "textures/uk/crtbg.png");
-	private static final Identifier SKULL_A = new Identifier(UltraCraft.MOD_ID, "textures/uk/skullframedoublea.png");
-	private static final Identifier SKULL_B = new Identifier(UltraCraft.MOD_ID, "textures/uk/skullframedoubleb.png");
-	private static final Identifier EYE = new Identifier(UltraCraft.MOD_ID, "textures/uk/iseeyou.png");
+	private static final Identifier FONT = Identifier.of(UltraCraft.MOD_ID, "vcr");
+	private static final Identifier CRT = Identifier.of(UltraCraft.MOD_ID, "textures/uk/crtbg.png");
+	private static final Identifier SKULL_A = Identifier.of(UltraCraft.MOD_ID, "textures/uk/skullframedoublea.png");
+	private static final Identifier SKULL_B = Identifier.of(UltraCraft.MOD_ID, "textures/uk/skullframedoubleb.png");
+	private static final Identifier EYE = Identifier.of(UltraCraft.MOD_ID, "textures/uk/iseeyou.png");
 	private static final String ERROR = "uk.ui.csfx-2_mechanics_45", WARNING = "uk.ui.beep_buzz_clean_tight_mid_x3";
 	private static final String BUZZ = "uk.unused.tvscreenbuzz";
 	private static final float SEQUENCE = 2f, SKULL_LOOP = 1.0166667f;
@@ -110,7 +110,7 @@ public final class UkDeathScreen extends Screen {
 	}
 
 	/** ScreenEvent.Opening: Minecraft's death screen becomes ours, or (clash mode) an instant respawn. */
-	public static void onScreenOpening(net.minecraftforge.client.event.ScreenEvent.Opening e) {
+	public static void onScreenOpening(net.neoforged.neoforge.client.event.ScreenEvent.Opening e) {
 		if (!(e.getNewScreen() instanceof net.minecraft.client.gui.screen.DeathScreen)) return;
 		// (already showing ours: Minecraft re-opens its death screen when a screen closes while the player is dead)
 		if (current != null) {
@@ -129,7 +129,7 @@ public final class UkDeathScreen extends Screen {
 	}
 
 	/** Minecraft draws its HUD under an open screen: none of it (chat, hotbar ...) while this one shows (screenHud off). */
-	public static void onOverlay(net.minecraftforge.client.event.RenderGuiOverlayEvent.Pre e) {
+	public static void onOverlay(net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Pre e) {
 		if (current != null) e.setCanceled(true);
 	}
 
@@ -159,7 +159,7 @@ public final class UkDeathScreen extends Screen {
 	}
 
 	/** ViewportEvent.ComputeCameraAngles: the camera turns with the body as it tips over. */
-	public static void onCameraAngles(net.minecraftforge.client.event.ViewportEvent.ComputeCameraAngles e) {
+	public static void onCameraAngles(net.neoforged.neoforge.client.event.ViewportEvent.ComputeCameraAngles e) {
 		if (current == null || current.feet == null) return;
 		// the view, as Minecraft builds it (Rz(roll) Rx(pitch) Ry(yaw + 180)), turned by the body: camera to world
 		// C = B * Ry(-(yaw + 180)) Rx(-pitch) Rz(-roll), read back as yaw / pitch / roll
@@ -304,7 +304,7 @@ public final class UkDeathScreen extends Screen {
 		lines = new ArrayList<>();
 		deadLines = new ArrayList<>();
 		try {
-			var res = MinecraftClient.getInstance().getResourceManager().getResource(new Identifier(UltraCraft.MOD_ID, "uk/death.json"));
+			var res = MinecraftClient.getInstance().getResourceManager().getResource(Identifier.of(UltraCraft.MOD_ID, "uk/death.json"));
 			if (res.isPresent()) {
 				try (var in = new InputStreamReader(res.get().getInputStream(), StandardCharsets.UTF_8)) {
 					JsonObject o = JsonParser.parseReader(in).getAsJsonObject();
@@ -523,13 +523,13 @@ public final class UkDeathScreen extends Screen {
 	}
 
 	/**
-	 * YouDiedText: one Text over the whole canvas (minus 20 top and bottom), middle centre, Best Fit (10 .. 200): the
+	 * YouDiedText: one Text over the whole canvas (minus 40 top and bottom), middle centre, Best Fit (10 .. 200): the
 	 * biggest size where its widest line fits across and all its lines fit down. The game's last line, "Press [R] TO
 	 * RESTART", says RESPAWN (a longer line would shrink on its own to fit across).
 	 */
 	private void renderDeadText(DrawContext ctx, int w, int h) {
 		float s = canvas(w, h);
-		float cw = w / s, ch = h / s - 40;
+		float cw = w / s, ch = h / s - 80;
 		int n = deadLines.size();
 		float widest = 0;
 		for (String l : deadLines) widest = Math.max(widest, width(l));
@@ -568,7 +568,9 @@ public final class UkDeathScreen extends Screen {
 		var handler = textRenderer.getTextHandler();
 		float tw = handler.getWidth(Text.literal(s).setStyle(style));
 		ctx.getMatrices().push();
-		ctx.getMatrices().translate(x, y, 0);
+		// The death-screen text group is top-heavy against the captured layout; move its center
+		// down slightly without moving the skull, background, or other screen artwork.
+		ctx.getMatrices().translate(x, y + height * 0.08f, 0);
 		ctx.getMatrices().scale(scale, scale, 1);
 		float pen = centred ? -tw / 2f : 0;
 		for (int i = 0; i < s.length(); i++) {
@@ -594,7 +596,7 @@ public final class UkDeathScreen extends Screen {
 		if (bearings == null) {
 			bearings = new float[128];
 			try {
-				var res = MinecraftClient.getInstance().getResourceManager().getResource(new Identifier(UltraCraft.MOD_ID, "font/vcr_osd_mono.ttf"));
+				var res = MinecraftClient.getInstance().getResourceManager().getResource(Identifier.of(UltraCraft.MOD_ID, "font/vcr_osd_mono.ttf"));
 				if (res.isPresent()) {
 					byte[] bytes;
 					try (var in = res.get().getInputStream()) {

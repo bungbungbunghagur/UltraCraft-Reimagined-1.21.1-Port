@@ -53,7 +53,7 @@ public final class UkAssets {
 	}
 
 	private static JsonObject json(String path) {
-		Identifier id = new Identifier(UltraCraft.MOD_ID, path);
+		Identifier id = Identifier.of(UltraCraft.MOD_ID, path);
 		try {
 			Optional<Resource> res = MinecraftClient.getInstance().getResourceManager().getResource(id);
 			if (res.isEmpty()) {

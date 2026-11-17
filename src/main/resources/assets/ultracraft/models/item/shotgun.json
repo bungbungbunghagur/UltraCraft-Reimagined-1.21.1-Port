@@ -1,14 +1,41 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "ultracraft:uk/shotgun1_sq"
+    "layer0": "ultracraft:uk/shotgun_sq"
   },
   "overrides": [
     {
       "predicate": {
-        "ultracraft:alt": 1
+        "ultracraft:variant": 1
+      },
+      "model": "ultracraft:item/shotgun_v1"
+    },
+    {
+      "predicate": {
+        "ultracraft:variant": 2
+      },
+      "model": "ultracraft:item/shotgun_v2"
+    },
+    {
+      "predicate": {
+        "ultracraft:alt": 1,
+        "ultracraft:variant": 0
       },
       "model": "ultracraft:item/shotgun_alt"
+    },
+    {
+      "predicate": {
+        "ultracraft:alt": 1,
+        "ultracraft:variant": 1
+      },
+      "model": "ultracraft:item/shotgun_alt_v1"
+    },
+    {
+      "predicate": {
+        "ultracraft:alt": 1,
+        "ultracraft:variant": 2
+      },
+      "model": "ultracraft:item/shotgun_alt_v2"
     }
   ]
 }

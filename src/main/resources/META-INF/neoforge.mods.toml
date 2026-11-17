@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[47,)"
+loaderVersion = "[4,)"
 license = "All rights reserved (code); no ULTRAKILL assets included"
 
 [[mods]]
@@ -13,16 +13,25 @@ ULTRAKILL's own models, textures, sounds and animations are built into this jar 
 own copy of the game. The jar is for you only: please don't share it.
 '''
 
+[[mixins]]
+config = "ultracraft.mixins.json"
+
+[[mixins]]
+config = "ultracraft.client.mixins.json"
+
+[[mixins]]
+config = "ultracraft.oculus.mixins.json"
+
 [[dependencies.ultracraft]]
-modId = "forge"
-mandatory = true
-versionRange = "[47,)"
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ultracraft]]
 modId = "minecraft"
-mandatory = true
-versionRange = "[1.20.1,1.20.2)"
+type = "required"
+versionRange = "[1.21.1,1.21.2)"
 ordering = "NONE"
 side = "BOTH"

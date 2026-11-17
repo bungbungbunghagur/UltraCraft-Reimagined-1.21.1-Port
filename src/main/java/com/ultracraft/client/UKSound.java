@@ -27,7 +27,7 @@ public final class UKSound {
 	private UKSound() {}
 
 	public static SoundEvent event(String name) {
-		return events.computeIfAbsent(name, n -> SoundEvent.of(new Identifier(UltraCraft.MOD_ID, n)));
+		return events.computeIfAbsent(name, n -> SoundEvent.of(Identifier.of(UltraCraft.MOD_ID, n)));
 	}
 
 	/**
@@ -41,7 +41,7 @@ public final class UKSound {
 	private static String mono(String name) {
 		MinecraftClient c = MinecraftClient.getInstance();
 		String m = name + "_m";
-		if (c.getSoundManager() == null || c.getSoundManager().get(new Identifier(UltraCraft.MOD_ID, m)) == null) return name;
+		if (c.getSoundManager() == null || c.getSoundManager().get(Identifier.of(UltraCraft.MOD_ID, m)) == null) return name;
 		return m;
 	}
 
@@ -49,7 +49,7 @@ public final class UKSound {
 		if (pitch[0] <= 2f) return name;
 		MinecraftClient c = MinecraftClient.getInstance();
 		String hi = name + "_x2";
-		if (c.getSoundManager() == null || c.getSoundManager().get(new Identifier(UltraCraft.MOD_ID, hi)) == null) return name;
+		if (c.getSoundManager() == null || c.getSoundManager().get(Identifier.of(UltraCraft.MOD_ID, hi)) == null) return name;
 		pitch[0] /= 2f;
 		return hi;
 	}

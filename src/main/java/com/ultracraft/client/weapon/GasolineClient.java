@@ -15,13 +15,12 @@ import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -41,12 +40,12 @@ import java.util.Set;
  * 0.2). Also tells V1 when it stands on gasoline (NewMovement.CheckForGasoline).
  */
 public final class GasolineClient {
-	private static final Identifier BODY = new Identifier(UltraCraft.MOD_ID, "textures/uk/gasoline_body.png");
-	private static final Identifier RIM = new Identifier(UltraCraft.MOD_ID, "textures/uk/gasoline_rim.png");
+	private static final Identifier BODY = Identifier.of(UltraCraft.MOD_ID, "textures/uk/gasoline_body.png");
+	private static final Identifier RIM = Identifier.of(UltraCraft.MOD_ID, "textures/uk/gasoline_rim.png");
 	/** fire1_32 with FireMaterial's colour mode baked in (build_assets.bake_fire: + (1, 0.3125, 0)) */
-	private static final Identifier FIRE = new Identifier(UltraCraft.MOD_ID, "textures/uk/fire1_32_lit.png");
+	private static final Identifier FIRE = Identifier.of(UltraCraft.MOD_ID, "textures/uk/fire1_32_lit.png");
 	/** the Fire prefab's sheet (burning enemies), the same layout */
-	private static final Identifier FIRE_64 = new Identifier(UltraCraft.MOD_ID, "textures/uk/fire1_64_lit.png");
+	private static final Identifier FIRE_64 = Identifier.of(UltraCraft.MOD_ID, "textures/uk/fire1_64_lit.png");
 	/** the BloodPlane mesh's half extent (0.16015629) x the stain's scale 16 */
 	private static final double HALF = 0.16015629 * 16;
 	/** cells per side the stain is cut into to keep only what lies on a block (the game clips to the surface) */
@@ -263,7 +262,7 @@ public final class GasolineClient {
 	private static boolean[] clip(ClientWorld w, Stain s) {
 		double h = HALF * Damage.SCALE_BLOCKS * Tune.get("gas.stainSize");
 		boolean[] m = new boolean[GRID * GRID];
-		boolean all = true;
+		boolean all = true, any = false;
 		BlockPos.Mutable bp = new BlockPos.Mutable();
 		for (int i = 0; i < GRID; i++)
 			for (int j = 0; j < GRID; j++) {
@@ -280,22 +279,22 @@ public final class GasolineClient {
 				}
 				m[i * GRID + j] = ok;
 				all &= ok;
+				any |= ok;
 			}
-		return all ? null : m;
+		return all || !any ? null : m;
 	}
 
 	/**
-	 * The stains with the terrain (after the cut-out blocks: under everything translucent, so a blast or water drawn later
-	 * lies over them instead of hiding them), the fire after the entities.
+	 * The stains after vanilla particles, like the blood stains; the fire after the entities.
 	 */
 	public static void onRenderLevel(RenderLevelStageEvent e) {
-		boolean stainPass = e.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS;
+		boolean stainPass = e.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES;
 		if ((!stainPass && e.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) || voxels.isEmpty()) return;
 		MinecraftClient c = MinecraftClient.getInstance();
 		if (c.world == null) return;
 		Camera cam = e.getCamera();
 		Vec3d camPos = cam.getPos();
-		float now = clock + (ViewModel.paused() ? 0 : e.getPartialTick() * 0.05f);
+		float now = clock + (ViewModel.paused() ? 0 : e.getPartialTick().getTickDelta(false) * 0.05f);
 		MatrixStack ms = e.getPoseStack();
 		VertexConsumerProvider.Immediate buffers = c.getBufferBuilders().getEntityVertexConsumers();
 		ms.push();
@@ -308,13 +307,13 @@ public final class GasolineClient {
 		double half = HALF * S * Tune.get("gas.stainSize");
 		// the stains: the body, then its rim over it
 		if (stainPass) for (int layer = 0; layer < 2; layer++) {
-			VertexConsumer vc = buffers.getBuffer(UkLayers.decal(layer == 0 ? BODY : RIM));
+			VertexConsumer vc = buffers.getBuffer(RenderLayer.getEntityTranslucentCull(layer == 0 ? BODY : RIM));
 			float[] col = layer == 0 ? body : rim;
 			for (Voxel v : voxels.values()) {
 				if (center(v).squaredDistanceTo(camPos) > far * far) continue;
 				float size = size(v, now);
 				if (size <= 0) continue;
-				for (Stain s : v.stains) stain(vc, mat, c.world, s, half * size, col, layer);
+				for (Stain s : v.stains) stain(vc, mat, s, half * size, col, layer);
 			}
 		}
 		if (stainPass) {
@@ -368,10 +367,10 @@ public final class GasolineClient {
 		buffers.draw();
 	}
 
-	private static void stain(VertexConsumer vc, Matrix4f mat, ClientWorld w, Stain s, double h, float[] col, int layer) {
+	private static void stain(VertexConsumer vc, Matrix4f mat, Stain s, double h, float[] col, int layer) {
 		// lifted off the surface a little, each stain a hair more than the last so overlapping ones do not flicker
-		Vec3d p = s.pos.add(s.normal.multiply(0.004));
-		int light = WorldRenderer.getLightmapCoordinates(w, BlockPos.ofFloored(s.pos.add(s.normal.multiply(0.3))));
+		Vec3d p = s.pos.add(s.normal.multiply(0.01));
+		int light = 0xF000F0;
 		float cu0 = s.index / 5f, cw = 1 / 5f;
 		if (s.mask == null) {
 			quad(vc, mat, p, s, -h, -h, h, h, cu0, cw, 0, 0, 1, 1, col, light);
@@ -395,10 +394,10 @@ public final class GasolineClient {
 	}
 
 	private static void sv(VertexConsumer vc, Matrix4f m, Vec3d p, float u, float v, float[] col, int light, Vec3d n) {
-		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(col[0], col[1], col[2], col[3]).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(light).normal((float) n.x, (float) n.y, (float) n.z).next();
+		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(col[0], col[1], col[2], col[3]).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(light).normal((float) n.x, (float) n.y, (float) n.z);
 	}
 
 	private static void fv(VertexConsumer vc, Matrix4f m, Vec3d p, float u, float v, float a) {
-		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(1f, 1f, 1f, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(1f, 1f, 1f, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 }

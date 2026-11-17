@@ -4,9 +4,9 @@ import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,12 +26,12 @@ public final class LavaServer {
 	private static boolean dealing;
 
 	public static void init() {
-		MinecraftForge.EVENT_BUS.addListener((LivingAttackEvent e) -> {
+		NeoForge.EVENT_BUS.addListener((LivingIncomingDamageEvent e) -> {
 			if (dealing || !(e.getEntity() instanceof ServerPlayerEntity p) || !e.getSource().isIn(DamageTypeTags.IS_FIRE)) return;
 			if (inGrace(p)) e.setCanceled(true);
 		});
-		MinecraftForge.EVENT_BUS.addListener((TickEvent.PlayerTickEvent e) -> {
-			if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayerEntity p)) return;
+		NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Post e) -> {
+			if (!(e.getEntity() instanceof ServerPlayerEntity p)) return;
 			if (inGrace(p) && p.isOnFire()) p.extinguish();
 			Integer at = burnAt.get(p);
 			if (at != null && p.getServer().getTicks() >= at) {

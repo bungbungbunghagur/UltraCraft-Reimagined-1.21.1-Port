@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "ultracraft:uk/hammerpump_sq"
+    "layer0": "ultracraft:uk/hammer_sq"
   }
 }

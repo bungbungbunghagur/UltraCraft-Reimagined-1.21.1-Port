@@ -192,7 +192,7 @@ public final class ShopScreen {
 
 	private static void load() {
 		try {
-			Identifier id = new Identifier(UltraCraft.MOD_ID, "uk/shop/shop_canvas.json");
+			Identifier id = Identifier.of(UltraCraft.MOD_ID, "uk/shop/shop_canvas.json");
 			var res = MinecraftClient.getInstance().getResourceManager().getResource(id);
 			if (res.isEmpty()) { loadFailed = true; UltraCraft.LOG.warn("shop: no {} (run the asset setup)", id); return; }
 			JsonObject root;
@@ -203,7 +203,7 @@ public final class ShopScreen {
 			for (var e : root.getAsJsonObject("sprites").entrySet()) {
 				JsonObject o = e.getValue().getAsJsonObject();
 				Sprite s = new Sprite();
-				s.tex = new Identifier(UltraCraft.MOD_ID, "textures/uk/shop/" + o.get("file").getAsString() + ".png");
+				s.tex = Identifier.of(UltraCraft.MOD_ID, "textures/uk/shop/" + o.get("file").getAsString() + ".png");
 				s.w = f(o.get("w"));
 				s.h = f(o.get("h"));
 				s.ppu = f(o.get("ppu"));
@@ -776,7 +776,7 @@ public final class ShopScreen {
 
 	private static void vtx(VertexConsumer vc, Matrix4f m, Matrix3x2f fr, float x, float y, float u, float v, float r, float g, float b, float a) {
 		Vector2f p = fr.transformPosition(x, y, new Vector2f());
-		vc.vertex(m, p.x, p.y, z).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, -1).next();
+		vc.vertex(m, p.x, p.y, z).color(r, g, b, a).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, -1);
 	}
 
 	/** u/v with v = 0 at the image's top; x/y with y up. */
@@ -832,7 +832,7 @@ public final class ShopScreen {
 	private static final float FONT_PX = 32f;
 	/** a line's height, x the font size: the font asset's lineHeight 73.125 at point size 90, x its scale 1.5 */
 	private static final float LINE = 73.125f / 90f * 1.5f;
-	private static final Style TERMINAL_STYLE = Style.EMPTY.withFont(new Identifier(UltraCraft.MOD_ID, "terminal"));
+	private static final Style TERMINAL_STYLE = Style.EMPTY.withFont(Identifier.of(UltraCraft.MOD_ID, "terminal"));
 
 	/** TMP rich text with <color> (named or #RRGGBB[AA]) into styled Text; other tags dropped. */
 	private static MutableText rich(String s, float[] base) {

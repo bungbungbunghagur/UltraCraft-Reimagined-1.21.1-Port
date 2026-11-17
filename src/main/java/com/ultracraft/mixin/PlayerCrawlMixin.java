@@ -1,7 +1,6 @@
 package com.ultracraft.mixin;
 
 import com.ultracraft.weapon.ServerTune;
-import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,16 +26,4 @@ abstract class PlayerCrawlMixin {
 			&& !self.isSwimming() && !self.isSpectator()) self.setPose(EntityPose.SWIMMING);
 	}
 
-	@Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
-	private void ultracraft$crawlBox(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir) {
-		PlayerEntity self = (PlayerEntity) (Object) this;
-		if (pose == EntityPose.SWIMMING && !self.isTouchingWater() && ServerTune.get("move.slideCrawl", 1) != 0)
-			cir.setReturnValue(EntityDimensions.changing(0.6F, (float) ServerTune.get("move.crawlHeight", 0.5)));
-	}
-
-	@Inject(method = "getActiveEyeHeight", at = @At("HEAD"), cancellable = true)
-	private void ultracraft$crawlEye(EntityPose pose, EntityDimensions dimensions, CallbackInfoReturnable<Float> cir) {
-		PlayerEntity self = (PlayerEntity) (Object) this;
-		if (pose == EntityPose.SWIMMING && !self.isTouchingWater() && ServerTune.get("move.slideCrawl", 1) != 0) cir.setReturnValue((float) ServerTune.get("move.crawlEye", 0.42));
-	}
 }

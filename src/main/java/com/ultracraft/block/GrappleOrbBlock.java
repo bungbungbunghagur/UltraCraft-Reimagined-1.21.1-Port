@@ -5,6 +5,7 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.MapColor;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.sound.BlockSoundGroup;
@@ -18,10 +19,16 @@ import net.minecraft.world.BlockView;
  * and keeps its momentum when it arrives. No collision (the game's orb is a trigger), so it can hang in the air.
  */
 public final class GrappleOrbBlock extends BlockWithEntity {
+	private static final MapCodec<GrappleOrbBlock> CODEC = MapCodec.unit(GrappleOrbBlock::new);
 	private static final VoxelShape SHAPE = Block.createCuboidShape(3, 3, 3, 13, 13, 13);
 
 	public GrappleOrbBlock() {
 		super(Settings.create().mapColor(MapColor.LIME).strength(1.5f).sounds(BlockSoundGroup.AMETHYST_BLOCK).nonOpaque().luminance(s -> 7).noCollision());
+	}
+
+	@Override
+	protected MapCodec<? extends BlockWithEntity> getCodec() {
+		return CODEC;
 	}
 
 	@Override

@@ -8,7 +8,7 @@ ULTRAKILL (c) New Blood Interactive / Arsi "Hakita" Patala. None of its files ar
 the mod's models, textures, animations, fonts and sounds from the copy of ULTRAKILL installed on your own PC. The jar it
 builds is for you only - please don't share it.
 
-Minecraft (c) Mojang Studios / Microsoft. Minecraft Forge (c) the Forge team.
+Minecraft (c) Mojang Studios / Microsoft. NeoForge (c) the NeoForged team.
 
 Tools used by the setup (licences in this folder):
 - Python 3.12 (PSF licence) with tkinter (Tcl/Tk licence)

@@ -11,9 +11,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -102,11 +102,11 @@ public final class Gasoline {
 	private Gasoline() {}
 
 	public static void init() {
-		MinecraftForge.EVENT_BUS.addListener((TickEvent.LevelTickEvent e) -> {
-			if (e.phase == TickEvent.Phase.END && e.level instanceof ServerWorld w) tick(w);
+		NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
+			if (e.getLevel() instanceof ServerWorld w) tick(w);
 		});
 		// a burning gasolined enemy shows Minecraft's flames; its burn damage is the Flammable pulses, not vanilla fire's
-		MinecraftForge.EVENT_BUS.addListener((LivingAttackEvent e) -> {
+		NeoForge.EVENT_BUS.addListener((LivingIncomingDamageEvent e) -> {
 			if (!(e.getEntity().getWorld() instanceof ServerWorld w) || !e.getSource().isIn(DamageTypeTags.IS_FIRE)) return;
 			State s = worlds.get(w);
 			Fuel f = s == null ? null : s.fuel.get(e.getEntity().getId());

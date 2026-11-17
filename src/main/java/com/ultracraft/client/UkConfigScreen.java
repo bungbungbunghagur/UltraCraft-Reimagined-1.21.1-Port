@@ -86,7 +86,7 @@ public final class UkConfigScreen extends Screen {
 
 	@Override
 	public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-		renderBackground(ctx);
+		renderBackground(ctx, mouseX, mouseY, delta);
 		ctx.drawCenteredTextWithShadow(textRenderer, title, width / 2, 20, 0xFFFFFF);
 		super.render(ctx, mouseX, mouseY, delta);
 	}

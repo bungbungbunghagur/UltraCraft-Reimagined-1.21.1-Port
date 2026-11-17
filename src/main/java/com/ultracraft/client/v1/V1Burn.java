@@ -21,7 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -38,8 +38,8 @@ import java.util.Random;
  * where it burnt, the server kills it after the same 2 s (Minecraft's own death and respawn then).
  */
 public final class V1Burn {
-	private static final Identifier SMOKE = new Identifier(UltraCraft.MOD_ID, "textures/uk/smokesprite.png");
-	private static final Identifier ASH = new Identifier(UltraCraft.MOD_ID, "textures/uk/blooddrop.png");
+	private static final Identifier SMOKE = Identifier.of(UltraCraft.MOD_ID, "textures/uk/smokesprite.png");
+	private static final Identifier ASH = Identifier.of(UltraCraft.MOD_ID, "textures/uk/blooddrop.png");
 
 	static {
 		Tune.def("clash.lavaBurn", 1, "1 = in clash mode (third person) ULTRAKILL lava burns V1 to ash and kills it (PlatformerMovement.Burn)");
@@ -94,7 +94,7 @@ public final class V1Burn {
 	public static void start(ClientPlayerEntity p) {
 		if (burning || !p.isAlive()) return;
 		MinecraftClient c = MinecraftClient.getInstance();
-		float td = c.getTickDelta();
+		float td = c.getRenderTickCounter().getTickDelta(false);
 		burning = burnt = true;
 		burntPlayer = p;
 		startNanos = System.nanoTime();
@@ -237,7 +237,7 @@ public final class V1Burn {
 	}
 
 	private static void v(VertexConsumer vc, Matrix4f m, double x, double y, double z, float u, float w, float grey, float a) {
-		vc.vertex(m, (float) x, (float) y, (float) z).color(grey, grey, grey, a).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) x, (float) y, (float) z).color(grey, grey, grey, a).texture(u, w).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 
 	public static void clear() {

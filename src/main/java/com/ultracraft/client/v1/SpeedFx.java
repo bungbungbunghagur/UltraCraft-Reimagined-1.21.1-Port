@@ -11,7 +11,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -179,7 +179,7 @@ public final class SpeedFx {
 		if (ViewModel.paused()) dt = 0;
 		V1 v = V1.INSTANCE;
 		double s = Damage.SCALE_BLOCKS;
-		anchor = origin(p, e.getPartialTick());
+		anchor = origin(p, e.getPartialTick().getTickDelta(false));
 		// FallParticle (the slam, NewMovement while heavyFall; parented to the player, world simulation): at the player +
 		// (-0.24 right, 2.78 up, 2.087 ahead) u, turned to emit straight down; a 15 x 5 x 5 u box (shape 3 x 5 x 1 x the
 		// emitter's 5 x 1 x 5: wide, ahead, tall), 20 at the start and 20 a second, 40 u/s down, 0.5 s; only the trails
@@ -249,7 +249,8 @@ public final class SpeedFx {
 			// clash mode (third person, PlatformerMovement): the same SlideScrape at the feet + dodgeDirection, with the
 			// prefab's own values - no flashes, no aiming round the camera (that is first person's tuning)
 			boolean clash = !c.options.getPerspective().isFirstPerson();
-			sparkEmitter = (clash ? p.getLerpedPos(e.getPartialTick()) : sparkRoot(p, e.getPartialTick())).add(dir.multiply(1 * s));
+			float tickDelta = e.getPartialTick().getTickDelta(false);
+			sparkEmitter = (clash ? p.getLerpedPos(tickDelta) : sparkRoot(p, tickDelta)).add(dir.multiply(1 * s));
 			sparkFrame = frame(dir.multiply(-1));
 			if (v.onGround && (Surfaces.under(p).sparks() || Tune.on("fx.sparksEverywhere"))) {
 				Vec3d camNow = e.getCamera().getPos();
@@ -432,7 +433,7 @@ public final class SpeedFx {
 		v(vc, m, a.add(side), r, g, bl, aA);
 	}
 
-	private static final net.minecraft.util.Identifier WHITE = new net.minecraft.util.Identifier("minecraft", "textures/misc/white.png");
+	private static final net.minecraft.util.Identifier WHITE = net.minecraft.util.Identifier.of("minecraft", "textures/misc/white.png");
 	private static boolean additive;
 	private static Vec3d camRef = Vec3d.ZERO;
 
@@ -445,9 +446,9 @@ public final class SpeedFx {
 			double x = Math.max(0, Math.min(1, (d - safeR) / safeF));
 			a *= safeMin + (1 - safeMin) * (float) (x * x * (3 - 2 * x));
 		}
-		if (additive) vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r * a, g * a, b * a, a).next();
+		if (additive) vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r * a, g * a, b * a, a);
 		else vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(Math.min(1, r * 1.25f), Math.min(1, g * 1.25f), Math.min(1, b * 1.25f), Math.min(1, a))
-			.texture(0.5f, 0.5f).overlay(net.minecraft.client.render.OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+			.texture(0.5f, 0.5f).overlay(net.minecraft.client.render.OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 
 	public static void clear() {

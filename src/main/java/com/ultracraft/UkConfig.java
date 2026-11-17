@@ -1,24 +1,24 @@
 package com.ultracraft;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 /** Player options (Mods → UltraCraft → Config): the few ULTRAKILL settings that matter in Minecraft. */
 public final class UkConfig {
-	public static final ForgeConfigSpec SPEC;
-	public static final ForgeConfigSpec.BooleanValue SPEEDOMETER;
-	public static final ForgeConfigSpec.BooleanValue PARRY_FLASH;
-	public static final ForgeConfigSpec.DoubleValue ZOOM_SENSITIVITY;
-	public static final ForgeConfigSpec.BooleanValue DROWNING;
-	public static final ForgeConfigSpec.BooleanValue OFFHAND_WEAPONS;
-	public static final ForgeConfigSpec.BooleanValue AIR_BRAKE;
-	public static final ForgeConfigSpec.BooleanValue SHORT_HOP;
-	public static final ForgeConfigSpec.BooleanValue LAVA_BOUNCE;
-	public static final ForgeConfigSpec.DoubleValue SOUND_VOLUME;
+	public static final ModConfigSpec SPEC;
+	public static final ModConfigSpec.BooleanValue SPEEDOMETER;
+	public static final ModConfigSpec.BooleanValue PARRY_FLASH;
+	public static final ModConfigSpec.DoubleValue ZOOM_SENSITIVITY;
+	public static final ModConfigSpec.BooleanValue DROWNING;
+	public static final ModConfigSpec.BooleanValue OFFHAND_WEAPONS;
+	public static final ModConfigSpec.BooleanValue AIR_BRAKE;
+	public static final ModConfigSpec.BooleanValue SHORT_HOP;
+	public static final ModConfigSpec.BooleanValue LAVA_BOUNCE;
+	public static final ModConfigSpec.DoubleValue SOUND_VOLUME;
 	/** 100% on the volume slider: ULTRAKILL's sounds at this share of their own level, to sit with Minecraft's (user). */
 	public static final double SOUND_BASE = 0.8;
 
 	static {
-		ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
+		ModConfigSpec.Builder b = new ModConfigSpec.Builder();
 		b.push("hud");
 		SPEEDOMETER = b.comment("Show the speedometer (SPEED: u/s) under the HUD, like ULTRAKILL's Speedometer option").define("speedometer", false);
 		PARRY_FLASH = b.comment("White screen flash on a successful parry (ULTRAKILL's Parry Flash option)").define("parryFlash", true);

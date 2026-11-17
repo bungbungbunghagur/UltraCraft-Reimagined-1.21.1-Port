@@ -1,5 +1,5 @@
 {
-  "version": "1.2",
-  "content": 5,
-  "_content": "bump 'content' when the built ULTRAKILL files change (exporters, build_assets lists, sound copies)"
+    "version":  "1.2",
+    "content":  7,
+    "_content":  "bump content when the built ULTRAKILL files change; content 7 registers every generated variant icon in the Minecraft block atlas"
 }

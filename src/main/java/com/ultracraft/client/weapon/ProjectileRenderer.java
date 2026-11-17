@@ -216,15 +216,15 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 	 * shader pack where depth still says sky) were laid over them. Faint parts (alpha under 0.1) are left out, as the
 	 * cutout program drops them.
 	 */
-	public static void onRenderLevel(net.minecraftforge.client.event.RenderLevelStageEvent e) {
+	public static void onRenderLevel(net.neoforged.neoforge.client.event.RenderLevelStageEvent e) {
 		// (under a shader pack after the particles was too late: the pack had laid its clouds in by then; right after the
 		// entities - still after every trail's colour - it is in time. proj.trailDepthStage: 0 after the entities, 1 after
 		// the particles, 2 after the translucent blocks)
 		boolean shadersOn = com.ultracraft.client.render.UkLayers.shadersOn();
 		int st = shadersOn ? (int) Tune.get("proj.trailDepthStage") : 1;
-		var want = st == 0 ? net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES
-			: st == 2 ? net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS
-			: net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
+		var want = st == 0 ? net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES
+			: st == 2 ? net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS
+			: net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES;
 		if (e.getStage() != want) return;
 		if (TRAIL_DEPTH_QUADS.isEmpty()) return;
 		if (TRAIL_DEPTH_QUADS.size() > 20000) { TRAIL_DEPTH_QUADS.clear(); return; }
@@ -247,15 +247,15 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 				double dx = q4[i * 4] - cam.x, dy = q4[i * 4 + 1] - cam.y, dz = q4[i * 4 + 2] - cam.z, d = Math.sqrt(dx * dx + dy * dy + dz * dz);
 				double k = d < 1e-4 ? 1 : (d + back) / d;
 				vc.vertex(m, (float) (dx * k), (float) (dy * k), (float) (dz * k)).color(shade, shade, shade, q4[i * 4 + 3])
-					.texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+					.texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 			}
 		TRAIL_DEPTH_QUADS.clear();
 		buffers.draw();
 	}
 
 	private static final double TRAIL_B = Tune.def("proj.trailBright", 1, "sawblade trail strength (Additive, alpha 0.49 at the saw; 1 = the prefab)");
-	private static final Identifier HUB_TEX = new Identifier(com.ultracraft.UltraCraft.MOD_ID, "textures/uk/sawblade_1.png");
-	private static final Identifier WHITE = new Identifier("minecraft", "textures/misc/white.png");
+	private static final Identifier HUB_TEX = Identifier.of(com.ultracraft.UltraCraft.MOD_ID, "textures/uk/sawblade_1.png");
+	private static final Identifier WHITE = Identifier.of("minecraft", "textures/misc/white.png");
 	private static final java.util.Map<Integer, java.util.ArrayDeque<double[]>> TRAILS = new java.util.HashMap<>();
 
 	/** A short textured cylinder along the local z axis (the blade's spin axis), two discs + rim. */
@@ -285,7 +285,7 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 	}
 
 	private static void put(net.minecraft.client.render.VertexConsumer vc, Matrix4f m, float x, float y, float z, float u, float v, float nx, float ny, float nz) {
-		vc.vertex(m, x, y, z).color(255, 255, 255, 255).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(nx, ny, nz).next();
+		vc.vertex(m, x, y, z).color(255, 255, 255, 255).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(nx, ny, nz);
 	}
 
 	/**
@@ -416,7 +416,7 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 	}
 
 	private static void ptv(net.minecraft.client.render.VertexConsumer vc, Matrix4f m, Vec3d p, float r, float g, float b, float a) {
-		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, a).texture(0.5f, 0.5f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, a).texture(0.5f, 0.5f).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 
 	private static final double PELLET_TRAIL = Tune.def("proj.pelletTrail", 1, "1 = shotgun pellets draw their TrailRenderer");
@@ -451,7 +451,7 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 		float[][] q = {{-1, -1, 0, 1}, {1, -1, 1, 1}, {1, 1, 1, 0}, {-1, 1, 0, 0}};
 		for (float[] c : q) {
 			float x = (a.x * c[0] + b.x * c[1]) * half, y = (a.y * c[0] + b.y * c[1]) * half, z = (a.z * c[0] + b.z * c[1]) * half;
-			vc.vertex(m, x, y, z).color(1f, 1f, 1f, 1f).texture(c[2], c[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+			vc.vertex(m, x, y, z).color(1f, 1f, 1f, 1f).texture(c[2], c[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 		}
 	}
 
@@ -548,7 +548,7 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 		float[][] q = {{-1, -1, 0, 1}, {1, -1, 1, 1}, {1, 1, 1, 0}, {-1, 1, 0, 0}};
 		for (float[] c : q) {
 			float x = (r.x * c[0] + u.x * c[1]) * half, y = (r.y * c[0] + u.y * c[1]) * half, z = (r.z * c[0] + u.z * c[1]) * half;
-			vc.vertex(m, x, y, z).color(1f, 1f, 1f, 1f).texture(c[2], c[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+			vc.vertex(m, x, y, z).color(1f, 1f, 1f, 1f).texture(c[2], c[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 		}
 	}
 
@@ -584,7 +584,7 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 		}
 	}
 
-	private static final Identifier STAR = new Identifier(com.ultracraft.UltraCraft.MOD_ID, "textures/uk/muzzleflashnailgun.png");
+	private static final Identifier STAR = Identifier.of(com.ultracraft.UltraCraft.MOD_ID, "textures/uk/muzzleflashnailgun.png");
 	// the 4-point star repeats every 90 deg, so above ~45 deg a frame (5400 deg/s at 120 fps) it starts to look like it turns backwards
 	private static final double SAW_STAR_SPIN = Tune.def("proj.sawStarSpin", -1800, "chainsaw star spin, deg/s, negative = the other way (prefab Spin: 3600)");
 	private static final double SAW_STAR = Tune.def("proj.sawStarSize", 1, "chainsaw star size multiplier (prefab: 3.2 u)");
@@ -598,17 +598,17 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 	private static void tvc(net.minecraft.client.render.VertexConsumer vc, Matrix4f m, Vec3d p, float t, float[] head) {
 		float a = 0.49f * t * (float) Tune.get("proj.trailBright");
 		float r = 1 + (head[0] - 1) * t, g = 1 + (head[1] - 1) * t, b = 1 + (head[2] - 1) * t;
-		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, a).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(r, g, b, a).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 
 	private static void tv(net.minecraft.client.render.VertexConsumer vc, Matrix4f m, Vec3d p, float a) {
-		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(1f, 1f, 1f, a).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0).next();
+		vc.vertex(m, (float) p.x, (float) p.y, (float) p.z).color(1f, 1f, 1f, a).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 1, 0);
 	}
 
 	private static long cbLog;
-	private static final Identifier RAGE_RING = new Identifier("ultracraft", "textures/uk/rageeffectwhite.png");
+	private static final Identifier RAGE_RING = Identifier.of("ultracraft", "textures/uk/rageeffectwhite.png");
 	private static final double FREEZE_SHADER_GAIN = Tune.def("proj.freezeShaderGain", 1, "Freezeframe rocket ring under a shader pack: its colour x this (the pack blooms unlit layers; by eye)");
-	private static final Identifier V_GRADIENT = new Identifier("ultracraft", "textures/uk/verticalgradient.png");
+	private static final Identifier V_GRADIENT = Identifier.of("ultracraft", "textures/uk/verticalgradient.png");
 
 	/**
 	 * Grenade.freezeEffect, on while the rockets are frozen: FreezeEffect (2 u ahead of the rocket, scale 3) / Sprite
@@ -651,7 +651,7 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 	private static final double ROCKET_TRAIL_G = Tune.def("proj.rocketTrailG", 0.5, "rocket trail colour, green (game: 0.5)");
 	private static final double ROCKET_TRAIL_B = Tune.def("proj.rocketTrailB", 0, "rocket trail colour, blue (game: 0)");
 	private static final double ROCKET_TRAIL_A = Tune.def("proj.rocketTrailA", 0.39, "rocket trail strength at the rocket (game: 0.39)");
-	private static final Identifier ROCKET_FLAME = new Identifier("ultracraft", "textures/uk/muzzleflashshotgun1.png");
+	private static final Identifier ROCKET_FLAME = Identifier.of("ultracraft", "textures/uk/muzzleflashshotgun1.png");
 
 	/**
 	 * Rocket_0's muzzleflash at its tail: the 'muzzleflashshotgun 1' sprite (0.16 u, x 0.5 x 24 x the rocket's 0.35 =
@@ -674,7 +674,7 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 		ms.pop();
 	}
 
-	private static final Identifier GRENADE_FLARE = new Identifier("ultracraft", "textures/uk/muzzleflashshotgun.png");
+	private static final Identifier GRENADE_FLARE = Identifier.of("ultracraft", "textures/uk/muzzleflashshotgun.png");
 
 	static {
 		Tune.def("grenade.flareSize", 1.5, "Core Eject / hammer grenade star size, x the game's (muzzleflashshotgun x 24 under the 0.5 root; bigger by the user's call)");
@@ -704,7 +704,7 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 		for (int pass = 0; pass < 2; pass++)
 			for (int i = 0; i < 4; i++) {
 				float[] q = c[pass == 0 ? i : 3 - i];
-				vc.vertex(m, q[0], q[1], z).color(r, g, b, a).texture(q[2], q[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, 1).next();
+				vc.vertex(m, q[0], q[1], z).color(r, g, b, a).texture(q[2], q[3]).overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0, 0, 1);
 			}
 	}
 
@@ -722,6 +722,6 @@ public final class ProjectileRenderer extends EntityRenderer<UKProjectileEntity>
 
 	@Override
 	public Identifier getTexture(UKProjectileEntity entity) {
-		return new Identifier("minecraft", "textures/misc/white.png");
+		return Identifier.of("minecraft", "textures/misc/white.png");
 	}
 }

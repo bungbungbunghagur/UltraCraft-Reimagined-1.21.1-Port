@@ -1,4 +1,4 @@
-"""UltraCraft Reimagined setup engine: finds ULTRAKILL through Steam, checks it, finds the player's Minecraft Forge 1.20.1 profiles in
+"""UltraCraft Reimagined setup engine: finds ULTRAKILL through Steam, checks it, finds the player's Minecraft NeoForge 1.21.1 profiles in
 a modding launcher (or makes a new "UltraCraft Reimagined" one in CurseForge / Prism / MultiMC), and builds the mod jar from the
 player's own ULTRAKILL files with the bundled tools (setup GUI: setup.pyw).
 
@@ -29,8 +29,8 @@ from pathlib import Path
 
 ULTRAKILL_APP = "1229490"
 NO_WINDOW = 0x08000000
-MINECRAFT = "1.20.1"
-FORGE = "47.4.10"
+MINECRAFT = "1.21.1"
+NEOFORGE = "21.1.172"
 NAME = "UltraCraft Reimagined"   # (another mod is called UltraCraft; the mod id stays "ultracraft")
 PROFILE_NAME = NAME
 JAR_PREFIX = "UltraCraft-Reimagined-"
@@ -206,7 +206,7 @@ def close_curseforge(timeout=8.0):
 
 
 def find_profiles():
-    """Modding-launcher profiles that run Forge 1.20.1: [{"name", "launcher", "mods": Path, "dir": Path}]."""
+    """Modding-launcher profiles that run NeoForge 1.21.1: [{"name", "launcher", "mods": Path, "dir": Path}]."""
     found = []
 
     def add(name, launcher, inst_dir, game_dir):
@@ -219,7 +219,7 @@ def find_profiles():
         try:
             d = json.loads(inst.read_text(encoding="utf-8"))
             loader = str((d.get("baseModLoader") or {}).get("name", ""))
-            if d.get("gameVersion") == MINECRAFT and loader.startswith("forge-"):
+            if d.get("gameVersion") == MINECRAFT and loader.startswith("neoforge-"):
                 add(d.get("name") or inst.parent.name, "CurseForge", inst.parent, inst.parent)
         except (OSError, ValueError):
             pass
@@ -227,7 +227,7 @@ def find_profiles():
         for pack in sorted((r / "instances").glob("*/mmc-pack.json")):
             try:
                 comps = {c.get("uid"): c.get("version") for c in json.loads(pack.read_text(encoding="utf-8")).get("components", [])}
-                if comps.get("net.minecraft") == MINECRAFT and "net.minecraftforge" in comps:
+                if comps.get("net.minecraft") == MINECRAFT and "net.neoforged" in comps:
                     game = pack.parent / ".minecraft"
                     if not game.exists() and (pack.parent / "minecraft").exists():
                         game = pack.parent / "minecraft"
@@ -241,6 +241,22 @@ def find_profiles():
             except (OSError, ValueError):
                 pass
     return found
+
+
+def selected_prism_profile(profiles):
+    """The selected Prism profile, if it is among the supported profiles."""
+    for root in prism_roots():
+        if root.name != "PrismLauncher":
+            continue
+        try:
+            config = (root / "prismlauncher.cfg").read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        selected = re.search(r"^SelectedInstance=(.*)$", config, re.M)
+        if selected:
+            return next((p for p in profiles if p["launcher"] == "Prism Launcher" and
+                         p["dir"].name == selected.group(1).strip()), None)
+    return None
 
 
 def uc_profile(launcher):
@@ -612,8 +628,8 @@ class Installer:
             self.log(f"   (profile picture skipped: {e})")
 
     def make_profile(self):
-        """The UltraCraft Reimagined profile (Forge 1.20.1) in the chosen modding launcher. The launcher downloads Minecraft and
-        Forge itself the first time the profile is played. An existing UltraCraft Reimagined profile is kept as it is."""
+        """The UltraCraft Reimagined profile (NeoForge 1.21.1) in the chosen modding launcher. The launcher downloads Minecraft and
+        NeoForge itself the first time the profile is played. An existing UltraCraft Reimagined profile is kept as it is."""
         if uc_profile(self.new_profile):
             self.mods = uc_profile(self.new_profile)["mods"]
             return
@@ -622,7 +638,7 @@ class Installer:
             root = curseforge_instances() or Path.home() / "curseforge/minecraft/Instances"
             inst = root / PROFILE_NAME
             (inst / "mods").mkdir(parents=True, exist_ok=True)
-            loader = json.loads((HERE / "data" / f"curseforge_forge-{MINECRAFT}-{FORGE}.json").read_text(encoding="utf-8"))
+            loader = json.loads((HERE / "data" / f"curseforge_neoforge-{MINECRAFT}-{NEOFORGE}.json").read_text(encoding="utf-8"))
             import uuid
             now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f0Z")
             data = {
@@ -646,7 +662,7 @@ class Installer:
             (inst / "instance.cfg").write_text(f"InstanceType=OneSix\nname={PROFILE_NAME}\n", encoding="utf-8")
             pack = {"formatVersion": 1, "components": [
                 {"uid": "net.minecraft", "version": MINECRAFT, "important": True},
-                {"uid": "net.minecraftforge", "version": FORGE}]}
+                {"uid": "net.neoforged", "version": NEOFORGE}]}
             (inst / "mmc-pack.json").write_text(json.dumps(pack, indent=2), encoding="utf-8")
             self.mods = inst / ".minecraft" / "mods"
         # (no options.txt: the mod sets its own key defaults the first time it starts)

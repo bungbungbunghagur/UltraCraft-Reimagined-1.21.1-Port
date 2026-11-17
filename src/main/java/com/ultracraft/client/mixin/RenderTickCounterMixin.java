@@ -14,12 +14,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * partial tick stands still, so everything in the world holds its place; frames keep drawing (camera look, the
  * parry look on the arms) and time picks up where it stopped afterwards.
  */
-@Mixin(RenderTickCounter.class)
+@Mixin(RenderTickCounter.Dynamic.class)
 abstract class RenderTickCounterMixin {
 	@Shadow private long prevTimeMillis;
 	@Shadow public float lastFrameDuration;
 
-	@Inject(method = "beginRenderTick", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "beginRenderTick(J)I", at = @At("HEAD"), cancellable = true)
 	private void ultracraft$parryFreeze(long timeMillis, CallbackInfoReturnable<Integer> cir) {
 		if (MinecraftClient.getInstance().world == null || !V1.INSTANCE.frozen()) return;
 		prevTimeMillis = timeMillis;
