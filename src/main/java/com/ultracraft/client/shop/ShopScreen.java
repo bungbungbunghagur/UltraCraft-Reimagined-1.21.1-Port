@@ -912,7 +912,7 @@ public final class ShopScreen {
 			float lw = tr.getWidth(line) * k;
 			// horizontal: Left 1, Center 2 and Geometry 32 (centred), Right 4 (Justified / Flush as left)
 			float x = (t.h & (2 | 32)) != 0 ? r[0] + (w - lw) / 2 : (t.h & 4) != 0 ? r[2] - lw : r[0];
-			float y = top + (float) com.ultracraft.client.Tune.get("shop.textY") - li * lineH;
+			float y = top + (float) com.ultracraft.client.Tune.get("shop.textY") - 3f - li * lineH;
 			Vector2f p = fr.transformPosition(x, y, new Vector2f());
 			ms.push();
 			Matrix4f m = ms.peek().getPositionMatrix();

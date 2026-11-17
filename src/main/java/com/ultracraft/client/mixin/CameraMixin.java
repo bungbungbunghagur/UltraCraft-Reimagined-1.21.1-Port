@@ -43,6 +43,6 @@ abstract class CameraMixin {
 		// (the shake's move this frame: things drawn over the world at a point in it, the muzzle flash, follow it)
 		s.shakeRight = -sx;
 		s.shakeUp = sy;
-		if (Math.abs(s.tiltZ) > 0.001) this.rotation.rotateZ((float) Math.toRadians(-s.tiltZ));
+		if (Math.abs(s.tiltZ) > 0.001) this.rotation.rotateZ((float) Math.toRadians(s.tiltZ));
 	}
 }
