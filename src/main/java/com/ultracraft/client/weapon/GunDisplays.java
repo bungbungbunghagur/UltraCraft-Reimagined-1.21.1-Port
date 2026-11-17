@@ -79,7 +79,7 @@ public final class GunDisplays {
 		Tune.def("view.sawRotY", 0, "Sawed-On chainsaw node rotation fix about y, degrees (prefab: 0)");
 		Tune.def("view.sawRotZ", 0, "Sawed-On chainsaw node rotation fix about z, degrees");
 		Tune.def("view.sawDebug", 0, "debug: draw the Sawed-On chainsaw magenta with the gun texture");
-		Tune.def("view.steamOnGun", 0, "1 = also draw the old gun-attached steam puffs (debug)");
+		Tune.def("view.reloadSteamOnGun", 1, "1 = draw reload steam from the animated shotgun heat-sink vents");
 		Tune.def("view.steamCount", 22, "steam puffs per heat sink on ReleaseHeat");
 		Tune.def("view.steamSpeed", 1.6, "steam puff speed along the sink, bone units/s");
 		Tune.def("view.steamSize", 0.28, "steam puff start size, view units");
@@ -2086,20 +2086,9 @@ public final class GunDisplays {
 		}
 	}
 
-	/** Shotgun.ReleaseHeat: world-space steam from both heat sinks (the vents sit on the Shell L / Shell R bones). */
+	/** Shotgun.ReleaseHeat: steam attached to the animated Shell L / Shell R heat-sink vents. */
 	public static void steam() {
-		RigInstance gun = ArsenalClient.cur().rig(com.ultracraft.item.WeaponKind.SHOTGUN);
-		String[] vents = {"GunArmature/Shell L", "GunArmature/Shell R"};
-		float[][] ventAt = {{-0.0227f, -0.0411f, 0.0662f}, {-0.0549f, -0.0411f, 0.0434f}};
-		for (int side = 0; side < 2; side++) {
-			Matrix4f b = gun == null ? null : gun.boneWorld(vents[side]);
-			if (b == null) continue;
-			Vector4f p4 = pt(b, ventAt[side][0], ventAt[side][1], ventAt[side][2]);
-			Vector3f dir = b.transformDirection(new Vector3f(0, 0, 1)).normalize();
-			float mx = OffhandGun.running() ? -1 : 1;
-			SteamFx.burst(HandRenderer.viewToWorld(new Vector3f(mx * p4.x, p4.y, p4.z)), HandRenderer.viewDirToWorld(dir.mul(mx, 1, 1)));
-		}
-		if (!Tune.on("view.steamOnGun")) return;
+		if (!Tune.on("view.reloadSteamOnGun")) return;
 		java.util.Random rnd = new java.util.Random();
 		steamLog = true;
 		int n = (int) Tune.get("view.steamCount");

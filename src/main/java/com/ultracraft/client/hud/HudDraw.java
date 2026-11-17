@@ -262,7 +262,7 @@ public final class HudDraw {
 	/** Live calibration of TMP point size → our font (hud.fontScale). */
 	public float fontScale = 1f;
 	/** Per-panel text adjustment in canvas units; the gun stats and style canvases need different alignment. */
-	public float textYOffset = -8f;
+	public float textYOffset = -10f;
 
 	public static int argb(float r, float g, float b, float a) {
 		return ((int) (a * 255) << 24) | ((int) (r * 255) << 16) | ((int) (g * 255) << 8) | (int) (b * 255);
