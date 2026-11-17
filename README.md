@@ -2,7 +2,7 @@
 
 [![Download the latest release](https://img.shields.io/badge/Download-latest%20release-d9262b?style=for-the-badge)](../../releases/latest)
 
-ULTRAKILL inside Minecraft (Forge 1.20.1): you play as V1, with ULTRAKILL's own movement, animations, weapons and every
+ULTRAKILL inside Minecraft (NeoForge 1.21.1): you play as V1, with ULTRAKILL's own movement, animations, weapons and every
 weapon variation including ULTRAKILL's own HUD, style meter and shop, all converted from your own copy of ULTRAKILL.
 
 ![The Knuckleblaster against the Ender Dragon](docs/images/knuckleblaster_dragon.jpg)
@@ -89,9 +89,9 @@ You need **ULTRAKILL** (Steam; the base game, no DLC needed), **Minecraft Java E
 
 1. Download `UltraCraft Reimagined Setup <version>.zip` from Releases and extract the whole zip.
 2. Close CurseForge if it is open.
-3. Run `Setup UltraCraft Reimagined.exe`. It finds ULTRAKILL in your Steam libraries and your Forge 1.20.1 profiles,
+3. Run `Setup UltraCraft Reimagined.exe`. It finds ULTRAKILL in your Steam libraries and your NeoForge 1.21.1 profiles,
    then lets you pick: a new **UltraCraft Reimagined** profile (CurseForge, Prism Launcher or MultiMC), one of your
-   own Forge 1.20.1 profiles, or any mods folder.
+   own NeoForge 1.21.1 profiles, or any mods folder.
 4. It builds the mod from your ULTRAKILL in a few minutes (command windows may flash; that's normal) and puts the jar
    in that profile. Play it from your launcher: a new profile downloads Minecraft and Forge the first time.
 
@@ -112,7 +112,7 @@ please don't share it; share the setup instead.
 
 - **No generative AI was used for any visual or audio asset.** Every model, animation, texture, sound and HUD element
   in UltraCraft Reimagined is ULTRAKILL's own, converted from your own install.
-- **The code and this description were written with [Claude Code](https://claude.com/claude-code)** (Anthropic), under
+- **The this description were written with [Claude Code](https://claude.com/claude-code) and the fork was made by Copilot and Codex**, under
   the author's direction, and went through intensive human testing and tuning. This is not just "Put Ultrakill in
   Minecraft" It's a mod that took a month of 10 hour work days to get this working as intended
 
@@ -120,7 +120,7 @@ please don't share it; share the setup instead.
 
 | Folder | What |
 |---|---|
-| `src/` | the mod (Forge 1.20.1, Java): V1's movement, weapons, arms, rigs and animation player, HUD, style meter, shop, damage |
+| `src/` | the mod (NeoForge 1.21.1, Java): V1's movement, weapons, arms, rigs and animation player, HUD, style meter, shop, damage |
 | `tools/extract/` | the extraction pipeline the setup runs on your ULTRAKILL install: Addressables catalog, rigs and animation clips, meshes, textures, sounds, fonts, the shop canvas |
 | `tools/re/` | scripts that read ULTRAKILL's game data and code layout to look up the game's own values |
 | `installer/` | the setup: wizard and engine (Python), launcher (Rust), package builder |
