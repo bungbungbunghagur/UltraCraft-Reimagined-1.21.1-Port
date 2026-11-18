@@ -80,6 +80,7 @@ public final class UltraCraftClient {
 			Net.onClient(com.ultracraft.net.OwnedPayload.class, com.ultracraft.client.shop.ShopClient::onOwned);
 			Net.onClient(ExplosionPayload.class, ExplosionFx::add);
 			Net.onClient(com.ultracraft.net.GasolinePayload.class, com.ultracraft.client.weapon.GasolineClient::onPayload);
+			Net.onClient(com.ultracraft.net.TbsCutscenePayload.class, payload -> TbsCutscene.hideForTicks(payload.ticks()));
 			Net.onClient(LaunchPayload.class, m -> {
 				MinecraftClient c = MinecraftClient.getInstance();
 				if (c.player == null) return;

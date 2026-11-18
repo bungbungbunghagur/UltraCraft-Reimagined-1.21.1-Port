@@ -15,10 +15,16 @@ public final class TbsCutscene {
 	private static long scannedTick = Long.MIN_VALUE;
 	private static long hideUntil = Long.MIN_VALUE;
 	private static boolean cached;
+	private static volatile long forcedHideUntilMillis;
 
 	private TbsCutscene() {}
 
+	public static void hideForTicks(int ticks) {
+		forcedHideUntilMillis = Math.max(forcedHideUntilMillis, System.currentTimeMillis() + Math.max(1, ticks) * 50L);
+	}
+
 	public static boolean hideUltrakillOverlay(ClientPlayerEntity player) {
+		if (System.currentTimeMillis() < forcedHideUntilMillis) return true;
 		if (player == null || player.getWorld() == null) return false;
 		World world = player.getWorld();
 		long tick = world.getTime();
@@ -43,7 +49,12 @@ public final class TbsCutscene {
 	}
 
 	private static boolean isIntegrityEnding(LivingEntity entity) {
-		if (!entity.getClass().getName().endsWith(".IntegrityPhase3Entity")) return false;
+		String type = entity.getClass().getName().toLowerCase(Locale.ROOT);
+		String path = net.minecraft.registry.Registries.ENTITY_TYPE.getId(entity.getType()).getPath().toLowerCase(Locale.ROOT);
+		boolean integrity = type.contains("integrity") || path.contains("integrity");
+		boolean phase3 = type.contains("phase3") || type.contains("phase_3") || type.contains("phase 3")
+			|| path.contains("phase3") || path.contains("phase_3") || path.contains("phase 3");
+		if (!integrity || !phase3) return false;
 		if (!entity.isAlive()) return true;
 		for (Method method : entity.getClass().getMethods()) {
 			String name = method.getName().toLowerCase(Locale.ROOT);

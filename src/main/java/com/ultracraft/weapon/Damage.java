@@ -135,6 +135,38 @@ public final class Damage {
 		return Registries.ENTITY_TYPE.getId(target.getType()).getNamespace().equals("thebrokenscript");
 	}
 
+	private static boolean isTbsBoss(LivingEntity target) {
+		String type = target.getClass().getName().toLowerCase(java.util.Locale.ROOT);
+		String path = Registries.ENTITY_TYPE.getId(target.getType()).getPath().toLowerCase(java.util.Locale.ROOT);
+		return (type.contains("integrity") || path.contains("integrity")) || type.contains("fractured") || path.contains("fractured")
+			|| type.contains("jimmy") || path.contains("jimmy");
+	}
+
+	private static boolean isTbsEntity(LivingEntity target) {
+		return Registries.ENTITY_TYPE.getId(target.getType()).getNamespace().equals("thebrokenscript") || isTbsBoss(target);
+	}
+
+	private static boolean isIntegrityPhase3(LivingEntity target) {
+		String type = target.getClass().getName().toLowerCase(java.util.Locale.ROOT);
+		String path = Registries.ENTITY_TYPE.getId(target.getType()).getPath().toLowerCase(java.util.Locale.ROOT);
+		return (type.contains("integrity") || path.contains("integrity"))
+			&& (type.contains("phase3") || type.contains("phase_3") || type.contains("phase 3")
+				|| path.contains("phase3") || path.contains("phase_3") || path.contains("phase 3"));
+	}
+
+	private record TbsDamageBudget(long tick, float spent) {}
+	private static final java.util.Map<LivingEntity, TbsDamageBudget> TBS_DAMAGE_BUDGET = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+	private static float limitTbsBossDamagePerTick(LivingEntity target, float requested) {
+		long tick = target.getWorld().getTime();
+		TbsDamageBudget budget = TBS_DAMAGE_BUDGET.get(target);
+		float spent = budget != null && budget.tick() == tick ? budget.spent() : 0f;
+		float cap = Math.max(0.1f, target.getMaxHealth() * 0.005f);
+		float amount = Math.min(requested, Math.max(0f, cap - spent));
+		TBS_DAMAGE_BUDGET.put(target, new TbsDamageBudget(tick, spent + amount));
+		return amount;
+	}
+
 	/** Keep the two cinematic boss openings intact: Integrity's 56.02-second Rise and Jimmy's RISING state. */
 	private static boolean isBrokenScriptBossIntro(LivingEntity target) {
 		String type = target.getClass().getName();
@@ -301,7 +333,7 @@ public final class Damage {
 	 * cannot be hurt (the Invulnerable tag, Resistance V or more - the game's invincible enemies keep their health).
 	 */
 	public static boolean wouldKill(ServerPlayerEntity shooter, LivingEntity target, float points, int hitter) {
-		boolean brokenScript = isBrokenScriptEntity(target);
+		boolean brokenScript = isTbsEntity(target);
 		if (brokenScript && isBrokenScriptBossIntro(target)) return false;
 		if (!brokenScript && target.isInvulnerableTo(source(shooter))) return false;
 		var res = target.getStatusEffect(net.minecraft.entity.effect.StatusEffects.RESISTANCE);
@@ -317,23 +349,23 @@ public final class Damage {
 			// as many points as the paired ULTRAKILL enemy's health take all of this mob's
 			double uk = Math.max(0.01, ServerTune.get("mob." + p.key() + ".health", p.ukHealth()));
 			amount = (float) (points * weakness(p, hitter, electric) * target.getMaxHealth() / uk);
-		} else if (isBrokenScriptEntity(target)) {
+		} else if (isTbsEntity(target)) {
 			// The two TBS bosses use about a thousand effective points so a projectile boost cannot erase their fights.
-			String type = target.getClass().getName();
-			boolean tbsBoss = type.endsWith(".IntegrityPhase3Entity") || type.endsWith(".FracturedEntity");
+			boolean tbsBoss = isTbsBoss(target);
 			double pointsPerHealthBar = tbsBoss ? 1024.0 : 100.0;
 			amount = (float) Math.max(tbsBoss ? 0.1 : 1.0, points * Math.max(1.0, target.getMaxHealth()) / pointsPerHealthBar);
 		} else amount = (float) (points * hpPerDamage);
-		if ((p == null || !p.boss()) && !isBrokenScriptEntity(target)) amount *= (float) armorFactor(target);
+		if ((p == null || !p.boss()) && !isTbsEntity(target)) amount *= (float) armorFactor(target);
 		return amount;
 	}
 
 	public static void deal(ServerPlayerEntity shooter, LivingEntity target, float points, Vec3d dir, float force, int hitter, boolean electric, Vec3d point) {
 		LAST_POINTS.put(target, points);
-		boolean brokenScript = isBrokenScriptEntity(target);
+		boolean brokenScript = isTbsEntity(target);
 		if (brokenScript && isBrokenScriptBossIntro(target)) return;
 		Profile p = profile(target);
 		float amount = amountFor(target, points, hitter, electric);
+		if (brokenScript && isTbsBoss(target)) amount = limitTbsBossDamagePerTick(target, amount);
 		DamageSource src = source(shooter, brokenScript);
 		// The Broken Script marks some entities invulnerable in their scripts; the user's request is for these mobs
 		// to stay vulnerable to this weapon damage even when their AI reapplies that flag.
@@ -357,6 +389,9 @@ public final class Damage {
 			float remainingHealth = Math.max(0, healthBefore - amount);
 			target.setHealth(remainingHealth);
 			if (remainingHealth <= 0) target.kill();
+		}
+		if (brokenScript && !target.isAlive() && isIntegrityPhase3(target)) {
+			com.ultracraft.net.Net.toNear((net.minecraft.server.world.ServerWorld) target.getWorld(), target.getPos(), new com.ultracraft.net.TbsCutscenePayload(400));
 		}
 		if (resistance != null && target.isAlive() && !target.hasStatusEffect(net.minecraft.entity.effect.StatusEffects.RESISTANCE))
 			target.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(resistance));

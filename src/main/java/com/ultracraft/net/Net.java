@@ -70,6 +70,7 @@ public final class Net {
 		toClientType(ExplosionPayload.class, ExplosionPayload::write, ExplosionPayload::read);
 		toClientType(LaunchPayload.class, LaunchPayload::write, LaunchPayload::read);
 		toClientType(GasolinePayload.class, GasolinePayload::write, GasolinePayload::read);
+		toClientType(TbsCutscenePayload.class, TbsCutscenePayload::write, TbsCutscenePayload::read);
 		toServerType(ShopPayload.class, ShopPayload::write, ShopPayload::read);
 		toClientType(OwnedPayload.class, OwnedPayload::write, OwnedPayload::read);
 		toServerType(HandPayload.class, HandPayload::write, HandPayload::read);

@@ -1069,21 +1069,26 @@ public class UKProjectileEntity extends Entity {
 	}
 
 	/** Feedbacker parry of the screwdriver's flying drill: relaunch it at high speed with a heavy burst hit. */
-	public void parryScrewdriver(Vec3d eye, Vec3d look) {
+	public void parryScrewdriver(net.minecraft.server.network.ServerPlayerEntity player, Vec3d eye, Vec3d look) {
 		if (!screwdriverParryable()) return;
-		screwdriverParried = true;
-		damage = Math.max(damage, 30f);
-		stuckFor = 0;
-		dataTracker.set(STUCK, false);
-		dataTracker.set(STUCK_IN, -1);
+		boolean wasStuck = dataTracker.get(STUCK);
+		Entity host = wasStuck ? getWorld().getEntityById(dataTracker.get(STUCK_IN)) : null;
 		Vec3d direction = look.normalize();
-		Vec3d launchPoint = eye.add(direction.multiply(0.75 * Damage.SCALE_BLOCKS));
-		setPosition(launchPoint);
-		prevX = launchPoint.x; prevY = launchPoint.y; prevZ = launchPoint.z;
-		Vec3d velocity = direction.multiply(500 * Damage.SCALE_BLOCKS * DT);
-		setVelocity(velocity);
-		face(velocity);
-		velocityModified = true;
+		LivingEntity burstTarget = host instanceof LivingEntity living && living.isAlive() ? living : null;
+		if (burstTarget == null) {
+			Vec3d end = eye.add(direction.multiply(8 * Damage.SCALE_BLOCKS));
+			double radius = 0.5 * Damage.SCALE_BLOCKS;
+			double nearest = Double.MAX_VALUE;
+			for (LivingEntity living : getWorld().getEntitiesByClass(LivingEntity.class, new Box(eye, end).expand(radius), e -> e != player && e.isAlive())) {
+				var hit = living.getBoundingBox().expand(radius).raycast(eye, end);
+				if (hit.isPresent() && hit.get().squaredDistanceTo(eye) < nearest) {
+					nearest = hit.get().squaredDistanceTo(eye);
+					burstTarget = living;
+				}
+			}
+		}
+		if (burstTarget != null) Damage.deal(player, burstTarget, 30f, direction, 0f, HitPayload.HARPOON);
+		discard();
 	}
 
 	// ------------------------------------------------------------------ Magnet.cs on sawblades
@@ -1726,6 +1731,7 @@ public class UKProjectileEntity extends Entity {
 			}
 			case SCREWDRIVER -> {
 				deal(sh, target, screwdriverParried ? Math.max(damage, 30f) : damage, dir, 0f, HitPayload.HARPOON, head, point);
+				if (screwdriverParried) { discard(); return; }
 				drillHitsLeft = 116;
 				stickIn(target, point, 8f);
 			}
