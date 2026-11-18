@@ -221,7 +221,7 @@ public final class GunDisplays {
 		if (t >= screenFlashDur || com.ultracraft.client.uk.ViewModel.paused() && t > screenFlashDur) return;
 		float p = Math.max(0f, Math.min(1f, t / Math.max(1e-3f, screenFlashDur)));
 		float end = screenFlashEnd >= 0 ? screenFlashEnd : (float) Tune.get("view.flashEnd");
-		float k = (float) Tune.get("view.flashScreenYellow");
+		float k = screenFlashSprite.equals("muzzleflashblue") ? 0f : (float) Tune.get("view.flashScreenYellow");
 		float scale = 1f - (1f - end) * p, alpha = (1f - (1f - end) * p) * screenFlashAlpha;
 		if (Tune.on("view.flashBehindGun") && drawFlashBehindGun(scale, alpha, k)) return;
 		float cx = (screenFlashX * 0.5f + 0.5f) * w, cy = (1f - (screenFlashY * 0.5f + 0.5f)) * h;
@@ -1774,7 +1774,7 @@ public final class GunDisplays {
 				}
 			}
 			if (flashFixed != null) {
-				float k = (float) Tune.get("view.flashYellow");
+				float k = flashSprite.equals("muzzleflashblue") ? 0f : (float) Tune.get("view.flashYellow");
 				// SpriteController: shrinks and fades at 10/s; the white-cored sprite's yellow comes back with the tint
 				// SpriteController: scale and alpha fall at 10/s; the flash is gone after ~0.05 s, at half size and half
 				// opacity (frame by frame from the game)

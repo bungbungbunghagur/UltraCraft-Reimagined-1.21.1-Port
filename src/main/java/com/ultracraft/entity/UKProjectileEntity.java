@@ -207,6 +207,7 @@ public class UKProjectileEntity extends Entity {
 	 * time since its last bounce (instaBreakDefence: for 1 s an enemy it touches is only noted).
 	 */
 	private boolean cbLaunched, cbHasBounced;
+	private boolean screwdriverParried;
 	private float cbDamage = 5, cbDefence = 1;
 	private final java.util.Set<Integer> cbHitEnemies = new java.util.HashSet<>();
 	/** Rockets of this owner are frozen while this is true (WeaponCharges.rocketFrozen is per player). */
@@ -1024,6 +1025,10 @@ public class UKProjectileEntity extends Entity {
 		return kind() == ProjectileKind.CANNONBALL && isAlive();
 	}
 
+	public boolean screwdriverParryable() {
+		return kind() == ProjectileKind.SCREWDRIVER && isAlive() && !dataTracker.get(STUCK);
+	}
+
 	/**
 	 * Punch.TryParryProjectile on a Cannonball, then Cannonball.Launch: within 10 u of the parry look target it is put
 	 * where the camera's 5 u ray meets something (else 5 u ahead) facing the camera's way, otherwise it is turned to look
@@ -1041,6 +1046,9 @@ public class UKProjectileEntity extends Entity {
 			dir = target.subtract(getPos()).normalize();
 		}
 		cbLaunched = true;
+		// A parried S.R.S. ball carries the force of the Cerberus combo: the Iron Golem profile's x2
+		// cannonball weakness turns 22 points into a lethal hit.
+		cbDamage = Math.max(cbDamage, 22f);
 		cbHitEnemies.clear();
 		cbDefence = 1;
 		if (bounces == 1 && cbHasBounced) cbDamage += 2;
@@ -1048,6 +1056,20 @@ public class UKProjectileEntity extends Entity {
 		Vec3d v = dir.multiply(150 * S * DT);
 		setVelocity(v);
 		face(v);
+	}
+
+	/** Feedbacker parry of the screwdriver's flying drill: relaunch it at high speed with a heavy burst hit. */
+	public void parryScrewdriver(Vec3d look) {
+		if (!screwdriverParryable()) return;
+		screwdriverParried = true;
+		damage = Math.max(damage, 30f);
+		stuckFor = 0;
+		dataTracker.set(STUCK, false);
+		dataTracker.set(STUCK_IN, -1);
+		Vec3d velocity = look.normalize().multiply(500 * Damage.SCALE_BLOCKS * DT);
+		setVelocity(velocity);
+		face(velocity);
+		velocityModified = true;
 	}
 
 	// ------------------------------------------------------------------ Magnet.cs on sawblades
@@ -1689,7 +1711,7 @@ public class UKProjectileEntity extends Entity {
 				stickIn(target, stickMagnet(tip, v, null), (float) MagnetField.FUSE);
 			}
 			case SCREWDRIVER -> {
-				deal(sh, target, damage, dir, 0f, HitPayload.HARPOON, head, point);
+				deal(sh, target, screwdriverParried ? Math.max(damage, 30f) : damage, dir, 0f, HitPayload.HARPOON, head, point);
 				drillHitsLeft = 116;
 				stickIn(target, point, 8f);
 			}

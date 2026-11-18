@@ -254,7 +254,7 @@ public final class WhiplashClient {
 					}
 				}
 				// enemies and dropped items can be caught (HookArm: EnemyIdentifier / ItemIdentifier)
-				for (Entity e : client.world.getOtherEntities(p, new Box(hookPoint, end).expand(radius + 0.5), ent -> (ent instanceof LivingEntity || ent instanceof net.minecraft.entity.ItemEntity) && ent.isAlive())) {
+				for (Entity e : client.world.getOtherEntities(p, new Box(hookPoint, end).expand(radius + 0.5), ent -> (ent instanceof LivingEntity || ent instanceof net.minecraft.entity.ItemEntity || ent instanceof com.ultracraft.entity.UKProjectileEntity projectile && projectile.cannonballParryable()) && ent.isAlive())) {
 					// Box.raycast needs an entry face: a step that starts inside the (expanded) box is a hit right there. The
 					// mob is drawn between its last two places: both count
 					Box now = e.getBoundingBox();

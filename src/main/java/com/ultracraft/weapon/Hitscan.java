@@ -124,6 +124,7 @@ public final class Hitscan {
 		lastHitCoin = false;
 		ServerWorld world = shooter.getServerWorld();
 		List<Hit> hits = new ArrayList<>();
+		java.util.Set<Integer> electricallyHit = new java.util.HashSet<>();
 		Vec3d start = origin;
 		Vec3d d = dir.normalize();
 		double range = Damage.rangeBlocks();
@@ -223,6 +224,7 @@ public final class Hitscan {
 					break;
 				}
 				LivingEntity target = (LivingEntity) c.e();
+				if (beam.kind() == 2) electricallyHit.add(target.getId());
 				boolean head = c.head() != null ? c.head() : isHeadshot(target, c.point(), start, d);
 				float mult = head ? beam.damage() * (1 + beam.crit()) : beam.damage();
 				int times = beam.instantHits() ? beam.maxHitsPerTarget() : 1; // railcannon / alt revolver hits land in one frame; super-beam multi-hits are coin splits
@@ -236,6 +238,27 @@ public final class Hitscan {
 				bodiesPierced++;
 				Net.toNear(world, c.point(), new HitPayload(killed ? HitPayload.KILL : HitPayload.ENEMY_HIT, beam.kind() == 2 || beam.kind() == 5 ? HitPayload.RAILCANNON : HitPayload.REVOLVER, head ? 1 : 0, Damage.flags(target), c.point()));
 				if (beam.hitAmount() == 1) { end = c.point(); break; }
+			}
+			// The electric railcannon discharges into connected water: living things submerged close to
+			// the beam take an electric hit even when the beam itself passed beside them.
+			if (beam.kind() == 2) {
+				Box waterSweep = new Box(start, end).expand(4.0);
+				Vec3d segmentLine = end.subtract(start);
+				double segmentLengthSquared = segmentLine.lengthSquared();
+				for (LivingEntity wet : world.getEntitiesByClass(LivingEntity.class, waterSweep,
+						entity -> entity != shooter && entity.isAlive() && entity.isSubmergedInWater() && !electricallyHit.contains(entity.getId()))) {
+					Vec3d center = wet.getBoundingBox().getCenter();
+					double t = segmentLengthSquared < 1.0e-9 ? 0 : Math.max(0, Math.min(1, center.subtract(start).dotProduct(segmentLine) / segmentLengthSquared));
+					if (center.squaredDistanceTo(start.add(segmentLine.multiply(t))) > 16.0) continue;
+					electricallyHit.add(wet.getId());
+					Vec3d shockPoint = center;
+					boolean wasAlive = wet.isAlive();
+					Damage.deal(shooter, wet, 1f, d, beam.force() * 0.5f, HitPayload.RAILCANNON, true, shockPoint);
+					boolean killed = wasAlive && !wet.isAlive();
+					hits.add(new Hit(wet, shockPoint, false, killed));
+					Net.toNear(world, shockPoint, new HitPayload(killed ? HitPayload.KILL : HitPayload.ENEMY_HIT,
+							HitPayload.RAILCANNON, 0, Damage.flags(wet), shockPoint));
+				}
 			}
 			// magnets in the way: the spike is a precisionOnly Breakable, which revolver beams (railcannon shots and coin
 			// ricochets among them) break; the harpoon goes with it and its magnet goes off

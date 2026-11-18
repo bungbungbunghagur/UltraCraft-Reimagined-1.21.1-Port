@@ -382,6 +382,11 @@ public final class ParryServer {
 				success(p, e.getPos(), true);
 				return true;
 			}
+			for (Entity e : world.getOtherEntities(p, zone, ent -> ent instanceof UKProjectileEntity u && u.screwdriverParryable() && inZone.test(ent.getPos()))) {
+				((UKProjectileEntity) e).parryScrewdriver(d);
+				success(p, e.getPos(), true);
+				return true;
+			}
 		}
 		ProjectileEntity best = null;
 		double bestDist = Double.MAX_VALUE;
