@@ -384,7 +384,7 @@ public final class ParryServer {
 				return true;
 			}
 			for (Entity e : world.getOtherEntities(p, projectileSearch, ent -> ent instanceof UKProjectileEntity u && u.screwdriverParryable() && inProjectileParryZone(ent, zone, inZone))) {
-				((UKProjectileEntity) e).parryScrewdriver(d);
+				((UKProjectileEntity) e).parryScrewdriver(start, d);
 				success(p, e.getPos(), true);
 				return true;
 			}

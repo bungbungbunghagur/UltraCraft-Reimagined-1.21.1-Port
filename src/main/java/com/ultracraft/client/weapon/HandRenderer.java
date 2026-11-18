@@ -250,6 +250,10 @@ public final class HandRenderer {
 		MinecraftClient client = MinecraftClient.getInstance();
 		ClientPlayerEntity p = client.player;
 		if (p == null || !Tune.on("view.show") || !UkAssets.available()) return;
+		if (com.ultracraft.client.TbsCutscene.hideUltrakillOverlay(p)) {
+			if (WeaponClient.holdingUkWeapon(p) || com.ultracraft.item.UKWeaponItem.kindOf(e.getItemStack()) != null) e.setCanceled(true);
+			return;
+		}
 		boolean uk = WeaponClient.holdingUkWeapon(p);
 		if (e.getHand() == Hand.OFF_HAND) {
 			// V1's left side is the fist arm, drawn with the main hand below; an off-hand item is held in it (OffhandHold)

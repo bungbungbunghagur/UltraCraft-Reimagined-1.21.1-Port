@@ -76,7 +76,7 @@ public final class StyleState {
 			{"ultrakill.fistfullofdollar", "<color=#00ffffff>FISTFUL OF DOLLAR</color>"}, {"ultrakill.projectileboost", "<color=green>PROJECTILE BOOST</color>"},
 			{"ultrakill.parry", "<color=green>PARRY</color>"}, {"ultrakill.chargeback", "CHARGEBACK"}, {"ultrakill.disrespect", "DISRESPECT"},
 			{"ultrakill.groundslam", "GROUND SLAM"}, {"ultrakill.overkill", "OVERKILL"}, {"ultrakill.friendlyfire", "FRIENDLY FIRE"},
-			{"ultrakill.exploded", "EXPLODED"}, {"ultrakill.fried", "FRIED"}, {"ultrakill.multikill", "<color=orange>MULTIKILL</color>"},
+			{"ultrakill.exploded", "EXPLODED"}, {"ultrakill.fried", "FRIED"}, {"ultrakill.cannonballed", "CANNONBALLED"}, {"ultrakill.multikill", "<color=orange>MULTIKILL</color>"},
 			{"ultrakill.airshot", "<color=#00ffffff>AIRSHOT</color>"}, {"ultrakill.airslam", "<color=#00ffffff>AIR SLAM</color>"},
 			{"ultrakill.hammerhit", ""}, {"ultrakill.hammerhitheavy", "BLASTING AWAY"}, {"ultrakill.hammerhitred", "FULL IMPACT"}, {"ultrakill.hammerhityellow", "HEAVY HITTER"}, {"ultrakill.hammerhitgreen", "BLUNT FORCE"},
 			{"ultrakill.shotgunhit", ""}, {"ultrakill.nailhit", ""}, {"ultrakill.explosionhit", ""}, {"ultrakill.firehit", ""}, {"ultrakill.zapperhit", ""}};

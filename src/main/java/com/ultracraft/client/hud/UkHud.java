@@ -169,7 +169,7 @@ public final class UkHud {
 	public static void render(DrawContext ctx, float tickDelta, int w, int h) {
 		MinecraftClient client = MinecraftClient.getInstance();
 		ClientPlayerEntity p = client.player;
-		if (p == null || client.options.hudHidden) return;
+		if (p == null || client.options.hudHidden || com.ultracraft.client.TbsCutscene.hideUltrakillOverlay(p)) return;
 		if (Tune.on("hud.classic")) {
 			V1Hud.render(ctx, tickDelta, w, h);
 			return;

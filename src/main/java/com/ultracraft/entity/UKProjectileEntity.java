@@ -1069,14 +1069,18 @@ public class UKProjectileEntity extends Entity {
 	}
 
 	/** Feedbacker parry of the screwdriver's flying drill: relaunch it at high speed with a heavy burst hit. */
-	public void parryScrewdriver(Vec3d look) {
+	public void parryScrewdriver(Vec3d eye, Vec3d look) {
 		if (!screwdriverParryable()) return;
 		screwdriverParried = true;
 		damage = Math.max(damage, 30f);
 		stuckFor = 0;
 		dataTracker.set(STUCK, false);
 		dataTracker.set(STUCK_IN, -1);
-		Vec3d velocity = look.normalize().multiply(500 * Damage.SCALE_BLOCKS * DT);
+		Vec3d direction = look.normalize();
+		Vec3d launchPoint = eye.add(direction.multiply(0.75 * Damage.SCALE_BLOCKS));
+		setPosition(launchPoint);
+		prevX = launchPoint.x; prevY = launchPoint.y; prevZ = launchPoint.z;
+		Vec3d velocity = direction.multiply(500 * Damage.SCALE_BLOCKS * DT);
 		setVelocity(velocity);
 		face(velocity);
 		velocityModified = true;

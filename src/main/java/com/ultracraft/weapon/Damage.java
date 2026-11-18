@@ -138,9 +138,7 @@ public final class Damage {
 	/** Keep the two cinematic boss openings intact: Integrity's 56.02-second Rise and Jimmy's RISING state. */
 	private static boolean isBrokenScriptBossIntro(LivingEntity target) {
 		String type = target.getClass().getName();
-		if (type.endsWith(".IntegrityPhase1Entity")) {
-			return target.age < 1121 && Boolean.TRUE.equals(invokeTbsGetter(target, "getCrawlOut"));
-		}
+		if (type.endsWith(".IntegrityPhase1Entity")) return true;
 		if (type.endsWith(".FracturedEntity")) {
 			Object state = invokeTbsGetter(target, "getCurrentState");
 			return state != null && state.toString().equals("RISING");
@@ -320,8 +318,11 @@ public final class Damage {
 			double uk = Math.max(0.01, ServerTune.get("mob." + p.key() + ".health", p.ukHealth()));
 			amount = (float) (points * weakness(p, hitter, electric) * target.getMaxHealth() / uk);
 		} else if (isBrokenScriptEntity(target)) {
-			// Keep their effective durability proportional to ULTRAKILL points, even if the other mod gives them huge HP pools.
-			amount = (float) Math.max(1.0, points * Math.max(1.0, target.getMaxHealth()) / 100.0);
+			// The two TBS bosses use about a thousand effective points so a projectile boost cannot erase their fights.
+			String type = target.getClass().getName();
+			boolean tbsBoss = type.endsWith(".IntegrityPhase3Entity") || type.endsWith(".FracturedEntity");
+			double pointsPerHealthBar = tbsBoss ? 1024.0 : 100.0;
+			amount = (float) Math.max(tbsBoss ? 0.1 : 1.0, points * Math.max(1.0, target.getMaxHealth()) / pointsPerHealthBar);
 		} else amount = (float) (points * hpPerDamage);
 		if ((p == null || !p.boss()) && !isBrokenScriptEntity(target)) amount *= (float) armorFactor(target);
 		return amount;
