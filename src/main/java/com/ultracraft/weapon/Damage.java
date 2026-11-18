@@ -135,6 +135,27 @@ public final class Damage {
 		return Registries.ENTITY_TYPE.getId(target.getType()).getNamespace().equals("thebrokenscript");
 	}
 
+	/** Keep the two cinematic boss openings intact: Integrity's 56.02-second Rise and Jimmy's RISING state. */
+	private static boolean isBrokenScriptBossIntro(LivingEntity target) {
+		String type = target.getClass().getName();
+		if (type.endsWith(".IntegrityPhase1Entity")) {
+			return target.age < 1121 && Boolean.TRUE.equals(invokeTbsGetter(target, "getCrawlOut"));
+		}
+		if (type.endsWith(".FracturedEntity")) {
+			Object state = invokeTbsGetter(target, "getCurrentState");
+			return state != null && state.toString().equals("RISING");
+		}
+		return false;
+	}
+
+	private static Object invokeTbsGetter(LivingEntity target, String getter) {
+		try {
+			return target.getClass().getMethod(getter).invoke(target);
+		} catch (ReflectiveOperationException | SecurityException ignored) {
+			return null;
+		}
+	}
+
 	/** A boss (BossIdentifier): not killed outright by the clash spin. */
 	public static boolean isBoss(LivingEntity t) {
 		Profile p = profile(t);
@@ -283,6 +304,7 @@ public final class Damage {
 	 */
 	public static boolean wouldKill(ServerPlayerEntity shooter, LivingEntity target, float points, int hitter) {
 		boolean brokenScript = isBrokenScriptEntity(target);
+		if (brokenScript && isBrokenScriptBossIntro(target)) return false;
 		if (!brokenScript && target.isInvulnerableTo(source(shooter))) return false;
 		var res = target.getStatusEffect(net.minecraft.entity.effect.StatusEffects.RESISTANCE);
 		if (!brokenScript && res != null && res.getAmplifier() >= 4) return false;
@@ -307,9 +329,10 @@ public final class Damage {
 
 	public static void deal(ServerPlayerEntity shooter, LivingEntity target, float points, Vec3d dir, float force, int hitter, boolean electric, Vec3d point) {
 		LAST_POINTS.put(target, points);
+		boolean brokenScript = isBrokenScriptEntity(target);
+		if (brokenScript && isBrokenScriptBossIntro(target)) return;
 		Profile p = profile(target);
 		float amount = amountFor(target, points, hitter, electric);
-		boolean brokenScript = isBrokenScriptEntity(target);
 		DamageSource src = source(shooter, brokenScript);
 		// The Broken Script marks some entities invulnerable in their scripts; the user's request is for these mobs
 		// to stay vulnerable to this weapon damage even when their AI reapplies that flag.
