@@ -229,7 +229,16 @@ public final class Damage {
 
 	/** The player's hit as the ultrakill damage type (Minecraft's armour formula skipped; enchantments still count). */
 	private static DamageSource source(ServerPlayerEntity shooter) {
+		return source(shooter, false);
+	}
+
+	/** The Broken Script filters damage types itself; its base mobs only forward generic-kill damage to vanilla. */
+	private static DamageSource source(ServerPlayerEntity shooter, boolean brokenScript) {
 		var reg = shooter.getWorld().getRegistryManager().get(RegistryKeys.DAMAGE_TYPE);
+		if (brokenScript) {
+			var genericKill = reg.getEntry(RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of("minecraft", "generic_kill")));
+			if (genericKill.isPresent()) return new DamageSource(genericKill.get(), shooter);
+		}
 		var entry = reg.getEntry(ULTRAKILL);
 		return entry.isPresent() ? new DamageSource(entry.get(), shooter) : shooter.getDamageSources().playerAttack(shooter);
 	}
@@ -297,8 +306,8 @@ public final class Damage {
 		LAST_POINTS.put(target, points);
 		Profile p = profile(target);
 		float amount = amountFor(target, points, hitter, electric);
-		DamageSource src = source(shooter);
 		boolean brokenScript = isBrokenScriptEntity(target);
+		DamageSource src = source(shooter, brokenScript);
 		// The Broken Script marks some entities invulnerable in their scripts; the user's request is for these mobs
 		// to stay vulnerable to this weapon damage even when their AI reapplies that flag.
 		if (brokenScript) target.setInvulnerable(false);
