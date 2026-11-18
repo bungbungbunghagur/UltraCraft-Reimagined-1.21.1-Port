@@ -381,7 +381,13 @@ public final class Damage {
 		Vec3d keepVel = p != null && p.boss() ? target.getVelocity() : null;
 		boolean wasAlive = target.isAlive();
 		float healthBefore = target.getHealth();
-		if (target instanceof EnderDragonEntity dragon && point != null) dragon.damagePart(nearestPart(dragon, point), src, amount);
+		if (brokenScript && isTbsBoss(target)) {
+			// TBS boss damage handlers can interpret generic_kill as an unconditional scripted kill. Apply the
+			// already-capped weapon damage to their health directly instead of invoking that source-type handler.
+			float remainingHealth = Math.max(0, healthBefore - amount);
+			target.setHealth(remainingHealth);
+			if (remainingHealth <= 0) target.kill();
+		} else if (target instanceof EnderDragonEntity dragon && point != null) dragon.damagePart(nearestPart(dragon, point), src, amount);
 		else target.damage(src, amount);
 		// Some Broken Script entities still reject damage after their source-type filter. Preserve the computed weapon damage
 		// by applying it to health directly when the custom handler left health unchanged.
