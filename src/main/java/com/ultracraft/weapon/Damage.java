@@ -297,6 +297,9 @@ public final class Damage {
 			// as many points as the paired ULTRAKILL enemy's health take all of this mob's
 			double uk = Math.max(0.01, ServerTune.get("mob." + p.key() + ".health", p.ukHealth()));
 			amount = (float) (points * weakness(p, hitter, electric) * target.getMaxHealth() / uk);
+		} else if (isBrokenScriptEntity(target)) {
+			// Keep their effective durability proportional to ULTRAKILL points, even if the other mod gives them huge HP pools.
+			amount = (float) Math.max(points * hpPerDamage, points * target.getMaxHealth() / 20.0);
 		} else amount = (float) (points * hpPerDamage);
 		if ((p == null || !p.boss()) && !isBrokenScriptEntity(target)) amount *= (float) armorFactor(target);
 		return amount;
@@ -321,8 +324,16 @@ public final class Damage {
 		// (a boss keeps its velocity: Minecraft's 0.4 hit knockback, every hit, made the Wither twitch in the air)
 		Vec3d keepVel = p != null && p.boss() ? target.getVelocity() : null;
 		boolean wasAlive = target.isAlive();
+		float healthBefore = target.getHealth();
 		if (target instanceof EnderDragonEntity dragon && point != null) dragon.damagePart(nearestPart(dragon, point), src, amount);
 		else target.damage(src, amount);
+		// Some Broken Script entities still reject damage after their source-type filter. Preserve the computed weapon damage
+		// by applying it to health directly when the custom handler left health unchanged.
+		if (brokenScript && target.isAlive() && target.getHealth() >= healthBefore) {
+			float remainingHealth = Math.max(0, healthBefore - amount);
+			target.setHealth(remainingHealth);
+			if (remainingHealth <= 0) target.kill();
+		}
 		if (resistance != null && target.isAlive() && !target.hasStatusEffect(net.minecraft.entity.effect.StatusEffects.RESISTANCE))
 			target.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(resistance));
 		if (keepVel != null) target.setVelocity(keepVel);
