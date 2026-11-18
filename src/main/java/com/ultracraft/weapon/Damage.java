@@ -10,6 +10,7 @@ import net.minecraft.entity.damage.DamageType;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArmorMaterials;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -100,7 +101,7 @@ public final class Damage {
 			HitPayload.REVOLVER, 1.5, REVOLVER_ALT_FIRE, 1.5, HitPayload.COIN, 1.5)), // Flesh Panopticon
 		// (user: the Wither also takes half from the shotgun's pellets, and all three bosses a tenth from a parried blast's
 		// pellet explosions - twelve pellets each going off for 3.5 took a fifth of the Wither a parry)
-		EntityType.WITHER, new Profile("wither", 200, true, Map.of(HitPayload.RAILCANNON, 0.5, HitPayload.SHOTGUN, 0.5, PARRIED_BLAST, 0.1,
+		EntityType.WITHER, new Profile("wither", 150, true, Map.of(HitPayload.RAILCANNON, 0.5, HitPayload.SHOTGUN, 0.5, PARRIED_BLAST, 0.1,
 			HitPayload.HAMMER, 1.5, REVOLVER_ALT_FIRE, 1.5)), // Sisyphus Prime (the revolvers' right clicks only: user) (parried blasts a tenth: user, at half ~10 parries killed it)
 		EntityType.ENDER_DRAGON, new Profile("enderDragon", 160, true, Map.of(HitPayload.RAILCANNON, 0.5, PARRIED_BLAST, 0.1, HitPayload.NAIL, 1.5))); // Minos (the corpse)
 
@@ -127,6 +128,11 @@ public final class Damage {
 
 	public static Profile profile(LivingEntity t) {
 		return PROFILES.get(t.getType());
+	}
+
+	/** The Broken Script's custom mobs should use the normal ULTRAKILL damage scale and not inherit scripted immunity. */
+	private static boolean isBrokenScriptEntity(LivingEntity target) {
+		return Registries.ENTITY_TYPE.getId(target.getType()).getNamespace().equals("thebrokenscript");
 	}
 
 	/** A boss (BossIdentifier): not killed outright by the clash spin. */
@@ -267,9 +273,10 @@ public final class Damage {
 	 * cannot be hurt (the Invulnerable tag, Resistance V or more - the game's invincible enemies keep their health).
 	 */
 	public static boolean wouldKill(ServerPlayerEntity shooter, LivingEntity target, float points, int hitter) {
-		if (target.isInvulnerableTo(source(shooter))) return false;
+		boolean brokenScript = isBrokenScriptEntity(target);
+		if (!brokenScript && target.isInvulnerableTo(source(shooter))) return false;
 		var res = target.getStatusEffect(net.minecraft.entity.effect.StatusEffects.RESISTANCE);
-		if (res != null && res.getAmplifier() >= 4) return false;
+		if (!brokenScript && res != null && res.getAmplifier() >= 4) return false;
 		return amountFor(target, points, hitter, false) >= target.getHealth();
 	}
 
@@ -282,7 +289,7 @@ public final class Damage {
 			double uk = Math.max(0.01, ServerTune.get("mob." + p.key() + ".health", p.ukHealth()));
 			amount = (float) (points * weakness(p, hitter, electric) * target.getMaxHealth() / uk);
 		} else amount = (float) (points * hpPerDamage);
-		if (p == null || !p.boss()) amount *= (float) armorFactor(target);
+		if ((p == null || !p.boss()) && !isBrokenScriptEntity(target)) amount *= (float) armorFactor(target);
 		return amount;
 	}
 
@@ -291,6 +298,12 @@ public final class Damage {
 		Profile p = profile(target);
 		float amount = amountFor(target, points, hitter, electric);
 		DamageSource src = source(shooter);
+		boolean brokenScript = isBrokenScriptEntity(target);
+		// The Broken Script marks some entities invulnerable in their scripts; the user's request is for these mobs
+		// to stay vulnerable to this weapon damage even when their AI reapplies that flag.
+		if (brokenScript) target.setInvulnerable(false);
+		var resistance = brokenScript ? target.getStatusEffect(net.minecraft.entity.effect.StatusEffects.RESISTANCE) : null;
+		if (resistance != null) target.removeStatusEffect(net.minecraft.entity.effect.StatusEffects.RESISTANCE);
 		// no i-frames between ULTRAKILL hits
 		target.timeUntilRegen = 0;
 		target.hurtTime = 0;
@@ -301,6 +314,8 @@ public final class Damage {
 		boolean wasAlive = target.isAlive();
 		if (target instanceof EnderDragonEntity dragon && point != null) dragon.damagePart(nearestPart(dragon, point), src, amount);
 		else target.damage(src, amount);
+		if (resistance != null && target.isAlive() && !target.hasStatusEffect(net.minecraft.entity.effect.StatusEffects.RESISTANCE))
+			target.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(resistance));
 		if (keepVel != null) target.setVelocity(keepVel);
 		// the blood it leaves heals V1 close by (Bloodsplatter: its sphere is on for 0.25 s)
 		BloodHeal.onHit(shooter, target, points, hitter, point, wasAlive && !target.isAlive());
