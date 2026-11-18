@@ -377,12 +377,13 @@ public final class ParryServer {
 		// Punch.TryParryProjectile on a Cannonball (on the punch's own frame): Hook and the parry flash (parry 0: no heal),
 		// then it is launched at the look target
 		if (firstFrame) {
-			for (Entity e : world.getOtherEntities(p, zone, ent -> ent instanceof UKProjectileEntity u && u.cannonballParryable() && inZone.test(ent.getPos()))) {
+			Box projectileSearch = zone.expand(2.5);
+			for (Entity e : world.getOtherEntities(p, projectileSearch, ent -> ent instanceof UKProjectileEntity u && u.cannonballParryable() && inProjectileParryZone(ent, zone, inZone))) {
 				((UKProjectileEntity) e).parryCannonball(start, d, WeaponServer.parryLookTarget(p, start, d));
 				success(p, e.getPos(), true);
 				return true;
 			}
-			for (Entity e : world.getOtherEntities(p, zone, ent -> ent instanceof UKProjectileEntity u && u.screwdriverParryable() && inZone.test(ent.getPos()))) {
+			for (Entity e : world.getOtherEntities(p, projectileSearch, ent -> ent instanceof UKProjectileEntity u && u.screwdriverParryable() && inProjectileParryZone(ent, zone, inZone))) {
 				((UKProjectileEntity) e).parryScrewdriver(d);
 				success(p, e.getPos(), true);
 				return true;
@@ -470,6 +471,16 @@ public final class ParryServer {
 				success(p, start.add(d.multiply(s)), true);
 				return true;
 			}
+		}
+		return false;
+	}
+
+	/** Fast custom projectiles may cross the narrow parry box between ticks; test their next two positions too. */
+	private static boolean inProjectileParryZone(Entity projectile, Box zone, java.util.function.Predicate<Vec3d> inZone) {
+		Vec3d pos = projectile.getPos(), velocity = projectile.getVelocity();
+		for (int step = 0; step <= 2; step++) {
+			Vec3d offset = velocity.multiply(step);
+			if (zone.intersects(projectile.getBoundingBox().offset(offset)) || inZone.test(pos.add(offset))) return true;
 		}
 		return false;
 	}

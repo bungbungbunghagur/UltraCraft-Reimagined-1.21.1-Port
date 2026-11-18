@@ -44,6 +44,7 @@ public class UKProjectileEntity extends Entity {
 	/** Punch.ParryProjectile on a player bullet: orange, x2 speed, x4 hitbox, explodes on hit (projectile boost). */
 	private static final TrackedData<Boolean> BOOSTED = DataTracker.registerData(UKProjectileEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	/** The shooter's entity id, for the shooter's client (its own nails are drawn there from the gun). */
+	private static final TrackedData<Boolean> WHIPLASHED = DataTracker.registerData(UKProjectileEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	private static final TrackedData<Integer> OWNER_ID = DataTracker.registerData(UKProjectileEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	/** A nail held by one or more magnets (its owner's client draws the server's copy from then on). */
 	private static final TrackedData<Boolean> MAGNETIZED = DataTracker.registerData(UKProjectileEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -251,6 +252,7 @@ public class UKProjectileEntity extends Entity {
 		builder.add(LEVELLED, false);
 		builder.add(STUCK_IN, -1);
 		builder.add(BOOSTED, false);
+		builder.add(WHIPLASHED, false);
 		builder.add(OWNER_ID, -1);
 		builder.add(MAGNETIZED, false);
 		builder.add(FUSE_AT, -1L);
@@ -875,7 +877,8 @@ public class UKProjectileEntity extends Entity {
 			// project's gravity (0, -40, 0)
 			cbDefence += DT;
 			if (Damage.debug && ((int) (age / DT)) % 5 == 0) com.ultracraft.UltraCraft.LOG.info("[cannonball] {} at {} v {}", getId(), getPos(), v);
-			if (cbLaunched) v = (v.lengthSquared() > 1e-12 ? v.normalize() : new Vec3d(0, 0, 1)).multiply(150 * Damage.SCALE_BLOCKS * DT);
+			if (dataTracker.get(WHIPLASHED)) v = Vec3d.ZERO;
+			else if (cbLaunched) v = (v.lengthSquared() > 1e-12 ? v.normalize() : new Vec3d(0, 0, 1)).multiply(150 * Damage.SCALE_BLOCKS * DT);
 			else v = v.add(0, -40 * Damage.SCALE_BLOCKS * DT * DT, 0);
 		} else if (k == ProjectileKind.CORE) v = v.add(0, -40 * Damage.SCALE_BLOCKS * DT * DT, 0); // a Rigidbody under the project's (0, -40, 0)
 		else if (k.gravity || k.nail()) v = v.add(0, -9.81 * Damage.SCALE_BLOCKS * DT * DT, 0);
@@ -1026,7 +1029,14 @@ public class UKProjectileEntity extends Entity {
 	}
 
 	public boolean screwdriverParryable() {
-		return kind() == ProjectileKind.SCREWDRIVER && isAlive() && !dataTracker.get(STUCK);
+		if (kind() != ProjectileKind.SCREWDRIVER || !isAlive()) return false;
+		if (!dataTracker.get(STUCK)) return true;
+		Entity host = getWorld().getEntityById(dataTracker.get(STUCK_IN));
+		return host instanceof LivingEntity && host.isAlive();
+	}
+
+	public void setWhiplashCaught(boolean caught) {
+		if (kind() == ProjectileKind.CANNONBALL) dataTracker.set(WHIPLASHED, caught);
 	}
 
 	/**

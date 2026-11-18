@@ -1,6 +1,7 @@
 package com.ultracraft.weapon;
 
 import com.ultracraft.UltraCraft;
+import com.ultracraft.entity.UKProjectileEntity;
 import com.ultracraft.item.RevolverItem;
 import com.ultracraft.item.UKItems;
 import com.ultracraft.net.FirePayload;
@@ -348,6 +349,7 @@ public final class WeaponServer {
 		if (target == null || !target.isAlive()) return;
 		switch (msg.mode()) {
 			case 0 -> {
+				if (target instanceof UKProjectileEntity projectile && projectile.cannonballParryable()) projectile.setWhiplashCaught(true);
 				// HookArm deals 0.2 on the grab; here a flat whiplash.grabDamage health (half a heart), which can kill:
 				// hooking enemies over and over costs them
 				if (target instanceof LivingEntity le) {
@@ -362,6 +364,7 @@ public final class WeaponServer {
 				}
 			}
 			case 1 -> {
+				if (target instanceof UKProjectileEntity projectile) projectile.setWhiplashCaught(false);
 				// toward where V1 is now (the client's eye it sent: the server's player is a tick behind a fast V1), 60 u/s,
 				// but no further than V1's body: it stops there instead of flying past
 				Vec3d feet = msg.origin().subtract(0, p.getStandingEyeHeight(), 0);
@@ -376,6 +379,7 @@ public final class WeaponServer {
 				holdAi(target);
 			}
 			case 5 -> {
+				if (target instanceof UKProjectileEntity projectile && projectile.cannonballParryable()) projectile.setWhiplashCaught(true);
 				// the hooking client moves its light enemy (it sees where V1 really is): taken while it is a pull step or so
 				// from where the enemy is here and near V1
 				Vec3d want = msg.origin();
@@ -390,6 +394,7 @@ public final class WeaponServer {
 				target.streamSelfAndPassengers().forEach(WeaponServer::holdAi);
 			}
 			case 2, 7 -> {
+				if (target instanceof UKProjectileEntity projectile) projectile.setWhiplashCaught(false);
 				// a hooked dropped item goes into the inventory when it reaches V1 (the game puts an ItemIdentifier in the
 				// hand; here the user's wish: the inventory, what does not fit stays on the ground at V1)
 				if (target instanceof net.minecraft.entity.ItemEntity item) {
@@ -415,6 +420,7 @@ public final class WeaponServer {
 				target.velocityModified = true;
 			}
 			case 4 -> {
+				if (target instanceof UKProjectileEntity projectile) projectile.setWhiplashCaught(false);
 				// let go mid-pull by a punch: keeps flying at V1 and stops when it gets there
 				holdAi(target);
 				Vec3d toV1 = p.getPos().add(0, 0.9, 0).subtract(target.getBoundingBox().getCenter());

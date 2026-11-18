@@ -321,7 +321,7 @@ public final class Damage {
 			amount = (float) (points * weakness(p, hitter, electric) * target.getMaxHealth() / uk);
 		} else if (isBrokenScriptEntity(target)) {
 			// Keep their effective durability proportional to ULTRAKILL points, even if the other mod gives them huge HP pools.
-			amount = (float) Math.max(1.0, points * Math.max(1.0, target.getMaxHealth()) / 40.0);
+			amount = (float) Math.max(1.0, points * Math.max(1.0, target.getMaxHealth()) / 100.0);
 		} else amount = (float) (points * hpPerDamage);
 		if ((p == null || !p.boss()) && !isBrokenScriptEntity(target)) amount *= (float) armorFactor(target);
 		return amount;
